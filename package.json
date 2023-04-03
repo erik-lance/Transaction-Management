@@ -1,0 +1,26 @@
+{
+  "name": "transaction-management",
+  "version": "1.0.0",
+  "description": "An Azure Cloud deployed web app for the requirements of STADVDB.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erik-lance/Transaction-Management.git"
+  },
+  "keywords": [
+    "database",
+    "azure"
+  ],
+  "author": "Tiongquico, E., Uy, S., Rafanan, C.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/erik-lance/Transaction-Management/issues"
+  },
+  "homepage": "https://github.com/erik-lance/Transaction-Management#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
