@@ -15,7 +15,7 @@ jobs:
         with:
           host: 52.237.80.158
           username: azureuser
-          key: ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
+          key: ${{ secrets.DEPLOYMENT_NODE_1_SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/html
             git pull
