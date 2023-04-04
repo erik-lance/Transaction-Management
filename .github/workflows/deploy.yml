@@ -22,5 +22,6 @@ jobs:
           script: |
             cd ~/Transaction-Management
             git config --global credential.helper store # this will cache your credentials
-            git pull https://github.com/${GIT_USER}/Transaction-Management.git
-            sudo cp -r Transaction-Management/* /var/www/html/
+            git pull https://github.com/${{ secrets.GIT_USER }}/Transaction-Management.git
+            cp -R Transaction-Management/* /var/www/html/
+
