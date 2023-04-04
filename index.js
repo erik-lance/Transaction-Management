@@ -2,6 +2,8 @@ const express = require("express"); // Import express
 const exphbs = require("express-handlebars"); // Import express-handlebars
 const mysql = require("mysql"); // Import mysql
 const dotenv = require("dotenv"); // Import dotenv
+const morgan = require("morgan"); // Import morgan
+
 
 const hbs = exphbs.create({
     defaultLayout: "main",
@@ -22,6 +24,9 @@ app.set("view engine", "hbs");
 
 // Set views
 //app.set("views", __dirname + "/views");
+
+// Log requests
+app.use(morgan("dev"));
 
 // Import routes
 const routes = require("./routes/routes.js");

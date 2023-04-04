@@ -6,11 +6,8 @@ const controller = {
         const data = {
             title: "Home",
             styles: ["index.css"],
-            scripts: ["index.js"],
+            scripts: ["scripts.js"],
         }
-        
-        console.log(data)
-
         res.render("index", data);
     },
 };
