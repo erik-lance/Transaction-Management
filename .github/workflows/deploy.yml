@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Deploy changes
         env:
+          GIT_USER: ${{ secrets.GIT_USER }}
           GIT_PASS: ${{ secrets.GIT_PASS }}
         uses: appleboy/ssh-action@master
         with:
@@ -21,5 +22,5 @@ jobs:
           script: |
             cd ~/Transaction-Management
             git config --global credential.helper store # this will cache your credentials
-            git pull https://github.com/erik-lance/Transaction-Management.git
+            git pull https://github.com/${GIT_USER}/Transaction-Management.git
             sudo mv Transaction-Management/* /var/www/html/
