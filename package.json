@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/erik-lance/Transaction-Management#readme",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mysql": "^2.18.1"
   }
 }
