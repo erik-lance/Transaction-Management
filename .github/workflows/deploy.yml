@@ -17,6 +17,6 @@ jobs:
           username: azureuser
           key: ${{ secrets.DEPLOYMENT_NODE_1_SSH_PRIVATE_KEY }}
           script: |
-            cd ~/Trasaction-Management
+            cd ~/Transaction-Management
             git pull
             sudo mv Transaction-Management/* /var/www/html/
