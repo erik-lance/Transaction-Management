@@ -47,10 +47,7 @@ const node_self = mysql.createConnection({
 });
 
 node_self.on('error', (err) => {
-    console.log('db error', err);
-    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-        console.log('DB Connection Error', err);
-    }
+    console.log(`Error connecting to database: ${err}`);
 });
 
 // To avoid fragments or crashes, we need to make sure

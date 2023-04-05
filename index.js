@@ -36,7 +36,7 @@ app.use("/", routes);
 
 // Start server
 app.listen(process.env.PORT || 3000, () =>
-  console.log(`Example app listening on port ${port}!`)
+  console.log(`Web app listening on port ${port}!`)
 );
 
 module.exports = app;
