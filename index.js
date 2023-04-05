@@ -1,6 +1,6 @@
 const express = require("express"); // Import express
 const exphbs = require("express-handlebars"); // Import express-handlebars
-const mysql = require("mysql"); // Import mysql
+const mysql = require("mysql2"); // Import mysql
 const dotenv = require("dotenv"); // Import dotenv
 const morgan = require("morgan"); // Import morgan
 

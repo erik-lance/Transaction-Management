@@ -1,4 +1,4 @@
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const conn = require("../models/conn.js");
 
 const controller = {
