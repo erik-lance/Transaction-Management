@@ -3,11 +3,34 @@ const dotenv = require("dotenv");
 
 dotenv.config({ path: "./.env" });
 
+let node_host, node_user, node_password, node_database = [];
+
+if (process.env.NODE_NUM_CONFIGURATION == -1) {
+    node_host = process.env.NODE_SELF_HOST;
+    node_user = process.env.NODE_SELF_USER;
+    node_password = process.env.MYSQL_PASSWORD;
+    node_database = process.env.MYSQL_DATABASE;
+}
+
+switch (process.env.NODE_NUM_CONFIGURATION) {
+    case -1:
+        node_host = process.env.NODE_SELF_HOST;
+        node_user = process.env.NODE_SELF_USER;
+        node_password = process.env.MYSQL_PASSWORD;
+        node_database = process.env.MYSQL_DATABASE;
+        break;
+    case 1:
+        node_host = process.env.NODE_1_HOST;
+        node_user = process.env.MYSQL_USER;
+        node_password = process.env.MYSQL_PASSWORD;
+        node_database = process.env.MYSQL_DATABASE;
+}
+
 const node_self = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: '1234',
-    database: 'mco2'
+    host: node_host,
+    user: node_user,
+    password: node_password,
+    database: node_database,
 
 });
 
