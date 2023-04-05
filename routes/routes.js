@@ -9,6 +9,8 @@ app.set('views', path.join(__dirname, '../views'));
 
 // GET
 app.get('/', controller.home);
+app.get('/movies', controller.movies);
+app.get('/moviesData', controller.moviesData);
 
 // POST
 // app.post('/addMovie', controller.addMovie);
