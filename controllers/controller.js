@@ -20,7 +20,7 @@ const controller = {
                 const data = {
                     title: "Movies",
                     styles: [],
-                    scripts: ["scripts.js"],
+                    scripts: ["loadMovies.js"],
                     movies: result,
                 }
                 res.render("movies", data);
