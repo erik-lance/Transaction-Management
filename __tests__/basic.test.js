@@ -2,10 +2,19 @@ const mysql = require("mysql2/promise");
 const dotenv = require("dotenv").config({path: './.env'});
 
 describe("Inserting data into the database", () => {
-    test("Insert valid row", async () => {
-        // Establish database connection
-        let test_conn = await connectToLocalDB();
+    let test_conn;
 
+    beforeAll(async () => {
+        // Establish database connection
+        test_conn = await connectToLocalDB();
+    });
+
+    afterAll(async () => {
+        // Close database connection
+        await test_conn.end();
+    });
+
+    test("Insert valid row", async () => {
         // Insert row
         await test_conn.query("INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
 
@@ -21,15 +30,9 @@ describe("Inserting data into the database", () => {
 
         // Remove inserted row
         await test_conn.query("DELETE FROM movies WHERE name = 'Test Movie'");
-
-        // Close database connection
-        await test_conn.end();
     });
 
     test("Delete record", async () => {
-        // Establish database connection
-        let test_conn = await connectToLocalDB();
-
         // Insert row
         await test_conn.query("INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
 
@@ -41,9 +44,6 @@ describe("Inserting data into the database", () => {
 
         // Verify if row was removed
         expect(rows.length).toBe(0);
-
-        // Close database connection
-        await test_conn.end();
     });
 
 
