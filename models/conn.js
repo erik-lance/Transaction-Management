@@ -74,16 +74,27 @@ node_self.on('error', (err) => {
  * transactions to a crashed node while it is recovering.
  */
 function dbQuery(db, query) {
-    retry_operation.attempt(() => {
-        db.beginTransaction(function (err) {
+    retry_operation.attempt(() => 
+    {
+        db.beginTransaction(function (err) 
+        {
             if (err) throw err;
             
+            // Actual Transaction
             db.query(query, function (err, result) {
             });
 
-            
+            db.commit(function (err) {
+                if (err) {
+                    // If there is an error, rollback the transaction
+                    // and try again
+                    db.rollback(() => { retry_operation.retry(err) });
+                } else {
+                    console.log("Transaction committed");
+                }
+            });
 
-        })
+        });
     })
 }
 
