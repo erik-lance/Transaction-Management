@@ -19,6 +19,7 @@ jobs:
           script: |
             cd ~/Transaction-Management
             git pull
+            npm install
       - name: Deploy changes to Node 2
         uses: appleboy/ssh-action@master
         with:
@@ -30,6 +31,7 @@ jobs:
           script: |
             cd ~/Transaction-Management
             git pull
+            npm install
       - name: Deploy changes to Node 3
         uses: appleboy/ssh-action@master
         with:
@@ -41,3 +43,4 @@ jobs:
           script: |
             cd ~/Transaction-Management
             git pull
+            npm install
