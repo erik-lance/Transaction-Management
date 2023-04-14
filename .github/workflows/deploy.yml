@@ -15,7 +15,7 @@ jobs:
           username: azureuser
           key: ${{ secrets.DEPLOYMENT_NODE_1_SSH_PRIVATE_KEY }}
           timeout-minutes: 5
-          if: ${{ success() }} # only run this step if the previous steps were successful
+          if: success() # only run this step if the previous steps were successful
           script: |
             cd ~/Transaction-Management
             git pull
@@ -26,7 +26,7 @@ jobs:
           username: azureuser # replace with the appropriate username
           key: ${{ secrets.DEPLOYMENT_NODE_2_SSH_PRIVATE_KEY }} # replace with the appropriate SSH private key secret
           timeout-minutes: 5
-          if: ${{ success() }} # only run this step if the previous steps were successful
+          if: success() # only run this step if the previous steps were successful
           script: |
             cd ~/Transaction-Management
             git pull
@@ -37,7 +37,7 @@ jobs:
           username: azureuser # replace with the appropriate username
           key: ${{ secrets.DEPLOYMENT_NODE_3_SSH_PRIVATE_KEY }} # replace with the appropriate SSH private key secret
           timeout-minutes: 5
-          if: ${{ success() }} # only run this step if the previous steps were successful
+          if: success() # only run this step if the previous steps were successful
           script: |
             cd ~/Transaction-Management
             git pull
