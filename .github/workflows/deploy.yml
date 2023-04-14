@@ -17,5 +17,3 @@ jobs:
           script: |
             cd ~/Transaction-Management
             git pull
-            erik-lance
-            ${{ secrets.GIT_PASS }}
