@@ -57,7 +57,27 @@ const node_self = mysql.createConnection({
     user: node_user,
     password: node_password,
     database: node_database,
+});
 
+const node_1 = mysql.createConnection({
+    host: process.env.NODE_1_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+});
+
+const node_2 = mysql.createConnection({
+    host: process.env.NODE_2_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+});
+
+const node_3 = mysql.createConnection({
+    host: process.env.NODE_3_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
 });
 
 node_self.on('connect', () => {
@@ -65,9 +85,32 @@ node_self.on('connect', () => {
 });
 
 node_self.on('error', (err) => {
-    console.log(`Error connecting to database: ${err}`);
+    console.log(`Error connecting to database of self: ${err}`);
 });
 
+node_1.on('connect', () => {
+    console.log('Connected to MySQL database: ' + process.env.MYSQL_USER + '@' + process.env.NODE_1_HOST + '/' + process.env.MYSQL_DATABASE);
+});
+
+node_1.on('error', (err) => {
+    console.log(`Error connecting to database of Node 1: ${err}`);
+});
+
+node_2.on('connect', () => {
+    console.log('Connected to MySQL database: ' + process.env.MYSQL_USER + '@' + process.env.NODE_2_HOST + '/' + process.env.MYSQL_DATABASE);
+});
+
+node_2.on('error', (err) => {
+    console.log(`Error connecting to database of Node 2: ${err}`);
+});
+
+node_3.on('connect', () => {
+    console.log('Connected to MySQL database: ' + process.env.MYSQL_USER + '@' + process.env.NODE_3_HOST + '/' + process.env.MYSQL_DATABASE);
+});
+
+node_3.on('error', (err) => {
+    console.log(`Error connecting to database of Node 3: ${err}`);
+});
 
 /**
  * This function is used to query the database. It will handle
@@ -112,4 +155,4 @@ process.on('SIGINT', () => {
     gracefulShutdown();
 });
 
-module.exports = { node_self };
+module.exports = { node_self, node_1, node_2, node_3, dbQuery };
