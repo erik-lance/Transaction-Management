@@ -14,7 +14,7 @@ jobs:
           host: 52.237.80.158
           username: azureuser
           key: ${{ secrets.DEPLOYMENT_NODE_1_SSH_PRIVATE_KEY }}
-          ignore-errors: true # added option to ignore errors
+          timeout-minutes: 5
           script: |
             cd ~/Transaction-Management
             git pull
@@ -24,7 +24,7 @@ jobs:
           host: 52.237.80.166
           username: azureuser # replace with the appropriate username
           key: ${{ secrets.DEPLOYMENT_NODE_2_SSH_PRIVATE_KEY }} # replace with the appropriate SSH private key secret
-          ignore-errors: true # added option to ignore errors
+          timeout-minutes: 5
           script: |
             cd ~/Transaction-Management
             git pull
@@ -34,7 +34,7 @@ jobs:
           host: 104.43.93.188
           username: azureuser # replace with the appropriate username
           key: ${{ secrets.DEPLOYMENT_NODE_3_SSH_PRIVATE_KEY }} # replace with the appropriate SSH private key secret
-          ignore-errors: true # added option to ignore errors
+          timeout-minutes: 5
           script: |
             cd ~/Transaction-Management
             git pull
