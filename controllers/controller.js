@@ -66,7 +66,52 @@ const controller = {
               res.redirect('/movies');
             }
           });
-        }
-    };
+        },
+
+    edit: (req, res) => {
+        conn.node_self.query("SELECT * FROM movies", (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Error opening page');
+            } else {
+                const data = {
+                    title: "Edit",
+                    styles: [],
+                    scripts: ["editPage.js"],
+                    movies: result,
+                }
+                res.render("edit", data);
+            }
+          });
+        },
+
+    delete: (req, res) => {
+        const movieID = req.params.id;
+        conn.node_self.query("DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Error adding movie. Please contact administrator.');
+              } else {
+                console.log(`Movie ID ${movieID} deleted from database`);
+                res.json({success: true});
+              }
+        });
+    },
+
+    update: (req, res) => {
+        const movieID = req.params.id;
+        conn.node_self.query("DELETE FROM movies WHERE id = ?", movieID, (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Error adding movie. Please contact administrator.');
+              } else {
+                console.log('Movie updated from database');
+                res.redirect('/edit');
+              }
+        });
+    }
+};
+
+    
 
 module.exports = controller;
