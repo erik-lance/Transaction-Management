@@ -1,7 +1,7 @@
 const mysql = require("mysql2/promise");
 const dotenv = require("dotenv").config({path: './.env'});
 
-describe("Inserting data into the database", () => {
+describe("Manipulating data into the database", () => {
     let test_conn;
 
     beforeAll(async () => {
@@ -46,6 +46,26 @@ describe("Inserting data into the database", () => {
         expect(rows.length).toBe(0);
     });
 
+    test("Edit record", async () => {
+        // Insert row
+        await test_conn.query("INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
+
+        // Edit inserted row
+        await test_conn.query("UPDATE movies SET name = 'Test Movie 2' WHERE name = 'Test Movie'");
+
+        // Check if row was removed
+        const [rows] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+
+        // Check if row was edited
+        const [rows2] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie 2'");
+
+        // Verify if row was edited
+        expect(rows.length).toBe(0);
+        expect(rows2.length).toBe(1);
+
+        // Remove inserted row
+        await test_conn.query("DELETE FROM movies WHERE name = 'Test Movie 2'");
+    });
 
 });
 
