@@ -8,12 +8,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Deploy changes
+      - name: Deploy changes to Node 1
         uses: appleboy/ssh-action@master
         with:
           host: 52.237.80.158
           username: azureuser
           key: ${{ secrets.DEPLOYMENT_NODE_1_SSH_PRIVATE_KEY }}
+          ignore-errors: true # added option to ignore errors
+          script: |
+            cd ~/Transaction-Management
+            git pull
+      - name: Deploy changes to Node 2
+        uses: appleboy/ssh-action@master
+        with:
+          host: 52.237.80.166
+          username: azureuser # replace with the appropriate username
+          key: ${{ secrets.DEPLOYMENT_NODE_2_SSH_PRIVATE_KEY }} # replace with the appropriate SSH private key secret
+          ignore-errors: true # added option to ignore errors
+          script: |
+            cd ~/Transaction-Management
+            git pull
+      - name: Deploy changes to Node 3
+        uses: appleboy/ssh-action@master
+        with:
+          host: 104.43.93.188
+          username: azureuser # replace with the appropriate username
+          key: ${{ secrets.DEPLOYMENT_NODE_3_SSH_PRIVATE_KEY }} # replace with the appropriate SSH private key secret
+          ignore-errors: true # added option to ignore errors
           script: |
             cd ~/Transaction-Management
             git pull
