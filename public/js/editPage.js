@@ -33,8 +33,6 @@ $(document).ready(function() {
 
         $("#moviesTable").on("click", ".delete-button", function() {
             var movieId = $(this).data("id");
-            console.log("Clicked delete");
-            console.log("Movie ID = ", movieId);
             $.ajax({
                 url: '/delete/' + movieId,
                 type: 'POST',
@@ -47,14 +45,22 @@ $(document).ready(function() {
                     alert('Error deleting movie. Please contact administrator.');
                 }
             });
-            // do something with the movie ID, such as sending an AJAX request to delete the movie from the server
         });
 
         $("#moviesTable").on("click", ".edit-button", function() {
             var movieId = $(this).data("id");
-            console.log("Clicked update");
-
-            // do something with the movie ID, such as sending an AJAX request to delete the movie from the server
+            console.log(movieId);
+            $.ajax({
+                url: '/editForm/' + movieId,
+                type: 'GET',
+                success: function(result) {
+                    console.log(result);
+                    window.location.href = '/editForm/' + movieId;
+                },
+                error: function(err) {
+                    console.log(err);
+                    alert('Error editing movie.');
+                } 
+            });
         });
-    
     });
