@@ -20,6 +20,7 @@ jobs:
             cd ~/Transaction-Management
             git pull
             npm install
+            echo "export NODE_NUM_CONFIGURATION=1" > .env
       - name: Deploy changes to Node 2
         uses: appleboy/ssh-action@master
         with:
@@ -32,6 +33,7 @@ jobs:
             cd ~/Transaction-Management
             git pull
             npm install
+            echo "export NODE_NUM_CONFIGURATION=2" > .env
       - name: Deploy changes to Node 3
         uses: appleboy/ssh-action@master
         with:
@@ -44,3 +46,4 @@ jobs:
             cd ~/Transaction-Management
             git pull
             npm install
+            echo "export NODE_NUM_CONFIGURATION=3" > .env
