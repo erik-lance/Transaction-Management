@@ -46,8 +46,27 @@ const controller = {
                 res.json({ data });
             }
         });
-    }
+    },
+
+    add: (req, res) => {
+        res.render("add");
+    },
     
-};
+    addMovie: (req, res) => {
+        console.log(req.body);
+        const { name, year, rank, genre } = req.body;
+        const movie = { name, year, rank, genre };
+
+        conn.node_self.query('INSERT INTO movies SET ?', movie, (err, result) => {
+            if (err) {
+              console.log(err);
+              res.status(500).send('Error adding movie. Please contact administrator.');
+            } else {
+              console.log('Movie added to database');
+              res.redirect('/movies');
+            }
+          });
+        }
+    };
 
 module.exports = controller;
