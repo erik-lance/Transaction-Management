@@ -1,0 +1,21 @@
+name: Deploy to Azure VM
+on:
+  push:
+    branches:
+      - master
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy changes
+        uses: appleboy/ssh-action@master
+        with:
+          host: 52.237.80.158
+          username: azureuser
+          key: ${{ secrets.DEPLOYMENT_NODE_1_SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/Transaction-Management
+            git pull
+            erik-lance
+            ${{ secrets.GIT_PASS }}
