@@ -12,40 +12,120 @@ const controller = {
     },
 
     movies: (req, res) => {
-        conn.node_self.query("SELECT * FROM movies", (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send('Error opening page');
-            } else {
-                const data = {
-                    title: "Movies",
-                    styles: [],
-                    scripts: ["loadMovies.js"],
-                    movies: result,
-                }
-                res.render("movies", data);
-            }
-        });
-    },
+          const data = {
+              title: "Movies",
+              styles: [],
+              scripts: ["loadMovies.js"],
+          }
+          res.render("movies", data);
+      },
 
     moviesData: (req, res) => {
-        conn.node_self.query("SELECT * FROM movies", (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send('Error retrieving data from database');
-            } else {
-                const data = result.map(row => {
-                    return {
-                        id: row.id,
-                        name: row.name,
-                        year: row.year,
-                        rank: row.rank,
-                        genre: row.genre
-                    };
-                });
-                res.json({ data });
-            }
-        });
+        console.log("Getting data...");
+        // if you're in node 2
+        if (process.env.NODE_NUM_CONFIGURATION == 2) {
+          console.log("You're in Node 2");
+          conn.node_2.query("SELECT * FROM movies", (err, result) => {
+              if (err) {
+                  console.log(err);
+                  res.status(500).send('Error retrieving data from database');
+              } else {
+                  const data = result.map(row => {
+                      return {
+                          id: row.id,
+                          name: row.name,
+                          year: row.year,
+                          rank: row.rank,
+                          genre: row.genre
+                      };
+                  });
+                  conn.node_3.query("SELECT * FROM movies", (err, result) => {
+                      if (err) {
+                          console.log(err);
+                          res.status(500).send('Error retrieving data from database');
+                      } else {
+                          const data2 = result.map(row => {
+                              return {
+                                  id: row.id,
+                                  name: row.name,
+                                  year: row.year,
+                                  rank: row.rank,
+                                  genre: row.genre
+                              };
+                          });
+                          const combinedData = data.concat(data2);
+                          const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
+                          uniqueData.sort((a, b) => a.id - b.id);
+                          res.json({ data: uniqueData });
+
+                      }
+                  });
+              }
+          });
+        }
+        // if you're in node 3
+        else if (process.env.NODE_NUM_CONFIGURATION == 3) {
+          console.log("You're in Node 3");
+          conn.node_3.query("SELECT * FROM movies", (err, result) => {
+              if (err) {
+                  console.log(err);
+                  res.status(500).send('Error retrieving data from database');
+              } else {
+                  const data = result.map(row => {
+                      return {
+                          id: row.id,
+                          name: row.name,
+                          year: row.year,
+                          rank: row.rank,
+                          genre: row.genre
+                      };
+                  });
+                  conn.node_2.query("SELECT * FROM movies", (err, result) => {
+                      if (err) {
+                          console.log(err);
+                          res.status(500).send('Error retrieving data from database');
+                      } else {
+                          const data2 = result.map(row => {
+                              return {
+                                  id: row.id,
+                                  name: row.name,
+                                  year: row.year,
+                                  rank: row.rank,
+                                  genre: row.genre
+                              };
+                          });
+                          const combinedData = data.concat(data2);
+                          const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
+                          uniqueData.sort((a, b) => a.id - b.id);
+                          res.json({ data: uniqueData });
+
+                      }
+                  });
+              }
+          });
+        }
+        // if you're in node 1
+        else {
+          console.log("You're in Node 1");
+          conn.node_1.query("SELECT * FROM movies", (err, result) => {
+              if (err) {
+                  console.log(err);
+                  res.status(500).send('Error retrieving data from database');
+              } else {
+                  const data = result.map(row => {
+                      return {
+                          id: row.id,
+                          name: row.name,
+                          year: row.year,
+                          rank: row.rank,
+                          genre: row.genre
+                      };
+                  });
+                  res.json({ data });
+              }
+          });
+        }
+
     },
 
     add: (req, res) => {
@@ -81,7 +161,7 @@ const controller = {
             }
         });
     },
-    
+
     addMovie: (req, res) => {
         console.log(req.body);
         const { name, year, rank, genre } = req.body;
@@ -114,44 +194,44 @@ const controller = {
     update: (req, res) => {
         const { name, year, rank, genre } = req.body;
         const movieId = req.params.id;
-        
+
         const queryValues = [];
         let query = "UPDATE movies SET ";
-        
+
         if (name !== undefined && name !== '') {
             query += " name = ?,";
             queryValues.push(name);
         } else {
             query += " name = NULL,";
         }
-        
+
         if (year !== undefined && year !== '') {
             query += " year = ?,";
             queryValues.push(year);
         } else {
             query += " year = NULL,";
         }
-        
+
         if (rank !== undefined && rank !== '') {
             query += " `rank` = ?,";
             queryValues.push(rank);
         } else {
             query += " `rank` = NULL,";
         }
-        
+
         if (genre !== undefined && genre !== '') {
             query += " genre = ?,";
             queryValues.push(genre);
         } else {
             query += " genre = NULL,";
         }
-        
+
         // Remove the last comma from the query string
         query = query.slice(0, -1);
-        
+
         query += " WHERE id = ?";
         queryValues.push(movieId);
-        
+
         conn.node_self.query(query, queryValues, (err, result) => {
             if (err) {
                 console.log(err);
@@ -164,6 +244,6 @@ const controller = {
     }
 };
 
-    
+
 
 module.exports = controller;
