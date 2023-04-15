@@ -1,5 +1,6 @@
 const mysql = require("mysql2");
 const conn = require("../models/conn.js");
+const dotenv = require("dotenv").config({path: './.env'});
 
 const controller = {
     home: (req, res) => {
@@ -12,24 +13,16 @@ const controller = {
     },
 
     movies: (req, res) => {
-        conn.node_self.query("SELECT * FROM movies", (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send('Error opening page');
-            } else {
-                const data = {
-                    title: "Movies",
-                    styles: [],
-                    scripts: ["loadMovies.js"],
-                    movies: result,
-                }
-                res.render("movies", data);
-            }
-        });
+        const data = {
+            title: "Movies",
+            styles: [],
+            scripts: ["loadMovies.js"],
+        }
+        res.render("movies", data);
     },
 
     moviesData: (req, res) => {
-        conn.node_self.query("SELECT * FROM movies", (err, result) => {
+        conn.dbQuery(conn.node_self, "SELECT * FROM movies", [], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error retrieving data from database');
@@ -53,7 +46,7 @@ const controller = {
     },
 
     edit: (req, res) => {
-        conn.node_self.query("SELECT * FROM movies", (err, result) => {
+        conn.dbQuery(conn.node_self, "SELECT * FROM movies", [], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error opening page');
@@ -71,7 +64,7 @@ const controller = {
 
     editForm: (req, res) => {
         const movieId = req.params.id;
-        conn.node_self.query("SELECT * FROM movies WHERE id = ?", [movieId], (err, result) => {
+        conn.dbQuery(conn.node_self, "SELECT * FROM movies WHERE id = ?", [movieId], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error retrieving movie information. Please contact administrator.');
@@ -87,7 +80,7 @@ const controller = {
         const { name, year, rank, genre } = req.body;
         const movie = { name, year, rank, genre };
 
-        conn.node_self.query('INSERT INTO movies SET ?', movie, (err, result) => {
+        conn.dbQuery(conn.node_self, "INSERT INTO movies SET ?", movie, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error adding movie. Please contact administrator.');
@@ -100,7 +93,7 @@ const controller = {
 
     delete: (req, res) => {
         const movieID = req.params.id;
-        conn.node_self.query("DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
+        conn.dbQuery(conn.node_self, "DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error adding movie. Please contact administrator.');
@@ -152,7 +145,7 @@ const controller = {
         query += " WHERE id = ?";
         queryValues.push(movieId);
         
-        conn.node_self.query(query, queryValues, (err, result) => {
+        conn.dbQuery(conn.node_self, query, queryValues, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error editing movie. Please contact administrator.");
