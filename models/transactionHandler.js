@@ -55,15 +55,12 @@ function recoverTransactions() {
         let node_logs = [];
         switch(i) {
             case 0:
-                node = conn.node_1;
                 node_logs = node_1_logs;
                 break;
             case 1:
-                node = conn.node_2;
                 node_logs = node_2_logs;
                 break;
             case 2:
-                node = conn.node_3;
                 node_logs = node_3_logs;
             default:
                 console.log("Error: Unknown node");
@@ -74,11 +71,35 @@ function recoverTransactions() {
             let log = node_logs[i];
             let query = "INSERT INTO movies (name, year, `rank`, genre) VALUES (?, ?, ?, ?)";
             let content = [log.name, log.year, log.rank, log.genre];
-            conn.dbQuery(conn.node, query, content, (err, result) => {
+
+            // Set destination node
+            if (node_logs.t_dest == 1) node = conn.node_1;
+            else if (node_logs.t_dest == 2) node = conn.node_2;
+            else if (node_logs.t_dest == 3) node = conn.node_3;
+
+            node.query(query, content, (err, result) => {
                 if (err) {
                     console.log(err);
                 } else {
                     console.log("Recovered transaction: "+result);
+
+                    // Delete the log from the local logs
+                    let deleteQuery = "DELETE FROM mco2_logs WHERE id = ?";
+                    let deleteContent = [log.id];
+                    let deleteNode = [];
+
+                    if (i == 0) deleteNode = conn.node_1;
+                    else if (i == 1) deleteNode = conn.node_2;
+                    else if (i == 2) deleteNode = conn.node_3;
+                    
+
+                    deleteNode.query(deleteQuery, deleteContent, (err, result) => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log("Local log deleted: "+result);
+                        }
+                    });
                 }
             });
         }
