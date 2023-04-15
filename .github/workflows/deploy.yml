@@ -21,6 +21,7 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=1" > .env
+            echo "export NODE_SELF_HOST=10.0.0.4" > .env
             pm2 stop my-app                # Stop the existing PM2 process (if any)
             pm2 delete my-app              # Delete the existing PM2 process (if any)
             pm2 start index.js --name my-app  # Start your Node.js application with PM2
@@ -37,6 +38,7 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=2" > .env
+            echo "export NODE_SELF_HOST=10.0.0.5" > .env
             pm2 stop my-app                # Stop the existing PM2 process (if any)
             pm2 delete my-app              # Delete the existing PM2 process (if any)
             pm2 start index.js --name my-app  # Start your Node.js application with PM2
@@ -53,6 +55,7 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=3" > .env
+            echo "export NODE_SELF_HOST=10.0.0.6" > .env
             pm2 stop my-app                # Stop the existing PM2 process (if any)
             pm2 delete my-app              # Delete the existing PM2 process (if any)
             pm2 start index.js --name my-app  # Start your Node.js application with PM2
