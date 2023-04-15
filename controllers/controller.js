@@ -23,107 +23,55 @@ const controller = {
 
     moviesData: (req, res) => {
         console.log("Getting data...");
-        // if you're in node 2
+        let node;
         if (process.env.NODE_NUM_CONFIGURATION == 2) {
-            conn.dbQuery(conn.node_2, "SELECT * FROM movies", [], (err, result) => {
-                if (err) {
-                    console.log(err);
-                    res.status(500).send('Error retrieving data from database');
-                } else {
-                    const data = result.map(row => {
-                        return {
-                            id: row.id,
-                            name: row.name,
-                            year: row.year,
-                            rank: row.rank,
-                            genre: row.genre
-                        };
-                    });
-                    conn.dbQuery(conn.node_3, "SELECT * FROM movies", [], (err, result) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send('Error retrieving data from database');
-                        } else {
-                            const data2 = result.map(row => {
-                                return {
-                                    id: row.id,
-                                    name: row.name,
-                                    year: row.year,
-                                    rank: row.rank,
-                                    genre: row.genre
-                                };
-                            });
-                            const combinedData = data.concat(data2);
-                            const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
-                            uniqueData.sort((a, b) => a.id - b.id);
-                            res.json({ data: uniqueData });
-
-                        }
-                    });
-                }
-            });
+            node = conn.node_2;
+        } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
+            node = conn.node_3;
+        } else {
+            node = conn.node_1;
         }
-        // if you're in node 3
-        else if (process.env.NODE_NUM_CONFIGURATION == 3) {
-            conn.dbQuery(conn.node_3, "SELECT * FROM movies", [], (err, result) => {
-                if (err) {
-                    console.log(err);
-                    res.status(500).send('Error retrieving data from database');
-                } else {
-                    const data = result.map(row => {
-                        return {
-                            id: row.id,
-                            name: row.name,
-                            year: row.year,
-                            rank: row.rank,
-                            genre: row.genre
-                        };
-                    });
-                    conn.dbQuery(conn.node_2, "SELECT * FROM movies", [], (err, result) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send('Error retrieving data from database');
-                        } else {
-                            const data2 = result.map(row => {
-                                return {
-                                    id: row.id,
-                                    name: row.name,
-                                    year: row.year,
-                                    rank: row.rank,
-                                    genre: row.genre
-                                };
-                            });
-                            const combinedData = data.concat(data2);
-                            const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
-                            uniqueData.sort((a, b) => a.id - b.id);
-                            res.json({ data: uniqueData });
-                        }
-                    });
-                }
-            });
-        }
-        // if you're in node 1
-        else {
-            conn.dbQuery(conn.node_1, "SELECT * FROM movies", [], (err, result) => {
-                if (err) {
-                    console.log(err);
-                    res.status(500).send('Error retrieving data from database');
-                } else {
-                    const data = result.map(row => {
-                        return {
-                            id: row.id,
-                            name: row.name,
-                            year: row.year,
-                            rank: row.rank,
-                            genre: row.genre
-                        };
-                    });
+        conn.dbQuery(node, "SELECT * FROM movies", [], (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Error retrieving data from database');
+            } else {
+                const data = result.map(row => {
+                    return {
+                        id: row.id,
+                        name: row.name,
+                        year: row.year,
+                        rank: row.rank,
+                        genre: row.genre
+                    };
+                });
+                if (node === conn.node_1) {
                     res.json({ data });
+                } else {
+                    conn.dbQuery(node === conn.node_2 ? conn.node_3 : conn.node_2, "SELECT * FROM movies", [], (err, result) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send('Error retrieving data from database');
+                        } else {
+                            const data2 = result.map(row => {
+                                return {
+                                    id: row.id,
+                                    name: row.name,
+                                    year: row.year,
+                                    rank: row.rank,
+                                    genre: row.genre
+                                };
+                            });
+                            const combinedData = data.concat(data2);
+                            const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
+                            uniqueData.sort((a, b) => a.id - b.id);
+                            res.json({ data: uniqueData });
+                        }
+                    });
                 }
-            });
-        }
-
-    },
+            }
+        });
+    },    
 
     connections: async (req, res) => {
         console.log("RETRIEVING CONNECTIONS");
