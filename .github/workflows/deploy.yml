@@ -21,8 +21,6 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=1" > .env
-            # Restart Apache
-            sudo service apache2 restart
             node index.js
       - name: Deploy changes to Node 2
         uses: appleboy/ssh-action@master
@@ -37,8 +35,6 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=2" > .env
-            # Restart Apache
-            sudo service apache2 restart
             node index.js
       - name: Deploy changes to Node 3
         uses: appleboy/ssh-action@master
@@ -53,6 +49,4 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=3" > .env
-            # Restart Apache
-            sudo service apache2 restart
             node index.js
