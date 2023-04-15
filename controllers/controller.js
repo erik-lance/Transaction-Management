@@ -121,7 +121,6 @@ const controller = {
             title: "Edit",
             styles: [],
             scripts: ["editPage.js"],
-            movies: result,
         }
         res.render("edit", data);
     },
