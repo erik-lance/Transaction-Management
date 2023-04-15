@@ -117,20 +117,13 @@ const controller = {
     },
 
     edit: (req, res) => {
-        conn.dbQuery(conn.node_self, "SELECT * FROM movies", [], (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send('Error opening page');
-            } else {
-                const data = {
-                    title: "Edit",
-                    styles: [],
-                    scripts: ["editPage.js"],
-                    movies: result,
-                }
-                res.render("edit", data);
-            }
-        });
+        const data = {
+            title: "Edit",
+            styles: [],
+            scripts: ["editPage.js"],
+            movies: result,
+        }
+        res.render("edit", data);
     },
 
     editForm: (req, res) => {
