@@ -150,7 +150,9 @@ async function dbQuery(pool, query, content, callback) {
         await connection.rollback();
 
         // Call storeQuery with pool, query, and content
-        //transactionHandler.storeQuery(pool, query, content);
+        // to store the query in the logs. Ignores read-only queries
+        if (content != null)
+            transactionHandler.storeQuery(pool, query, content);
 
         callback(err);
 
