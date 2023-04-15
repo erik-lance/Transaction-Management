@@ -149,6 +149,9 @@ async function dbQuery(pool, query, content, callback) {
         // If there is an error, rollback the transaction
         await connection.rollback();
 
+        // Call storeQuery with pool, query, and content
+        //transactionHandler.storeQuery(pool, query, content);
+
         callback(err);
 
         // Throw the error for handling with try/catch or promises
