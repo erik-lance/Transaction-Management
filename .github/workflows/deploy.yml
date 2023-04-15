@@ -21,7 +21,9 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=1" > .env
-            node index.js
+            pm2 stop my-app                # Stop the existing PM2 process (if any)
+            pm2 delete my-app              # Delete the existing PM2 process (if any)
+            pm2 start index.js --name my-app  # Start your Node.js application with PM2
       - name: Deploy changes to Node 2
         uses: appleboy/ssh-action@master
         with:
@@ -35,7 +37,9 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=2" > .env
-            node index.js
+            pm2 stop my-app                # Stop the existing PM2 process (if any)
+            pm2 delete my-app              # Delete the existing PM2 process (if any)
+            pm2 start index.js --name my-app  # Start your Node.js application with PM2
       - name: Deploy changes to Node 3
         uses: appleboy/ssh-action@master
         with:
@@ -49,4 +53,6 @@ jobs:
             git pull
             npm install
             echo "export NODE_NUM_CONFIGURATION=3" > .env
-            node index.js
+            pm2 stop my-app                # Stop the existing PM2 process (if any)
+            pm2 delete my-app              # Delete the existing PM2 process (if any)
+            pm2 start index.js --name my-app  # Start your Node.js application with PM2
