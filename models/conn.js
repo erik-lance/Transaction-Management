@@ -1,16 +1,9 @@
-const mysql = require("mysql2");
-const retry = require("retry");
+const util = require("util");
+const mysql = require("mysql2/promise");
 const dotenv = require("dotenv").config({path: './.env'});
+const transactionHandler = require("../models/transactionHandler.js");
 
 let node_host, node_user, node_password, node_database = [];
-
-const retry_operation = retry.operation({
-    retries: 10,            // 10 times
-    factor: 3,              // 3 * 1 = 3, 3 * 3 = 9, 3 * 9 = 27, etc.
-    minTimeout: 1 * 1000,   // 1 second
-    maxTimeout: 60 * 1000,  // 1 minute
-    randomize: true,        // Randomize the timeouts by multiplying
-})
 
 function switchConnection(config_num) {
     switch (config_num) {
@@ -52,35 +45,39 @@ function switchConnection(config_num) {
 switchConnection(process.env.NODE_NUM_CONFIGURATION);
 
 
-const node_self = mysql.createConnection({
+const node_self = mysql.createPool({
     host: node_host,
     user: node_user,
     password: node_password,
     database: node_database,
+    connectionLimit: 10,
 });
 
-const node_1 = mysql.createConnection({
+const node_1 = mysql.createPool({
     host: process.env.NODE_1_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
+    connectionLimit: 10,
 });
 
-const node_2 = mysql.createConnection({
+const node_2 = mysql.createPool({
     host: process.env.NODE_2_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
+    connectionLimit: 10,
 });
 
-const node_3 = mysql.createConnection({
+const node_3 = mysql.createPool({
     host: process.env.NODE_3_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
+    connectionLimit: 10,
 });
 
-node_self.on('connect', () => {
+node_self.on('connection', (connection) => {
     console.log('Connected to MySQL database: ' + node_user + '@' + node_host + '/' + node_database);
 });
 
@@ -88,7 +85,7 @@ node_self.on('error', (err) => {
     console.log(`Error connecting to database of self: ${err}`);
 });
 
-node_1.on('connect', () => {
+node_1.on('connection', (connection) => {
     console.log('Connected to MySQL database: ' + process.env.MYSQL_USER + '@' + process.env.NODE_1_HOST + '/' + process.env.MYSQL_DATABASE);
 });
 
@@ -96,7 +93,7 @@ node_1.on('error', (err) => {
     console.log(`Error connecting to database of Node 1: ${err}`);
 });
 
-node_2.on('connect', () => {
+node_2.on('connection', (connection) => {
     console.log('Connected to MySQL database: ' + process.env.MYSQL_USER + '@' + process.env.NODE_2_HOST + '/' + process.env.MYSQL_DATABASE);
 });
 
@@ -104,7 +101,7 @@ node_2.on('error', (err) => {
     console.log(`Error connecting to database of Node 2: ${err}`);
 });
 
-node_3.on('connect', () => {
+node_3.on('connection', (connection) => {
     console.log('Connected to MySQL database: ' + process.env.MYSQL_USER + '@' + process.env.NODE_3_HOST + '/' + process.env.MYSQL_DATABASE);
 });
 
@@ -112,47 +109,82 @@ node_3.on('error', (err) => {
     console.log(`Error connecting to database of Node 3: ${err}`);
 });
 
-/**
- * This function is used to query the database. It will handle
- * transactions to a crashed node while it is recovering.
- */
-function dbQuery(db, query) {
-    retry_operation.attempt(() => 
-    {
-        db.beginTransaction(function (err) 
-        {
-            if (err) throw err;
-            
-            // Actual Transaction
-            db.query(query, function (err, result) {
-            });
-
-            db.commit(function (err) {
-                if (err) {
-                    // If there is an error, rollback the transaction
-                    // and try again
-                    db.rollback(() => { retry_operation.retry(err) });
-                } else {
-                    console.log("Transaction committed");
-                }
-            });
-
+// Wrap the pool's getConnection function to return a promise
+// for consistency with async/await pattern
+async function getConnection(pool) {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(connection);
         });
-    })
+    });
 }
 
+// This function is used to query the database with a transaction. It will handle
+// transactions using a connection from the pool.
+async function dbQuery(pool, query, content, callback) {
+    let connection;
+    try {
+        // Get a database connection from the pool
+        connection = await pool.getConnection();
+
+        // Begin the transaction
+        await connection.beginTransaction();
+
+        // Perform the query within the transaction
+        const result = await connection.query(query, content);
+
+        // Commit the transaction
+        await connection.commit();
+
+        // Release the database connection back to the pool
+        connection.release();
+
+        return callback(null, result[0]);
+
+
+    } catch (err) {
+        // If there is an error, rollback the transaction
+        await connection.rollback();
+
+        // Call storeQuery with pool, query, and content
+        //transactionHandler.storeQuery(pool, query, content);
+
+        callback(err);
+
+        // Throw the error for handling with try/catch or promises
+        throw err;
+    } finally {
+        // Release the database connection back to the pool
+        if (connection) {
+            connection.release();
+        }
+    }
+}
+
+
+
+
 // To avoid fragments or crashes, we need to make sure
-// we close the connection when the process is terminated
-function gracefulShutdown() {
-    node_self.end(function () {
+// we close the connection pool when the process is terminated
+function gracefulShutdown(pool) {
+    pool.end(function (err) {
+        if (err) {
+            console.error('Error while closing connection pool:', err);
+        }
         console.log("Shutting down gracefully");
-        process.exit();
     });
 }
 
 process.on('SIGINT', () => {
     console.log('Received SIGINT, shutting down gracefully');
-    gracefulShutdown();
+    gracefulShutdown(node_self);
+    gracefulShutdown(node_1);
+    gracefulShutdown(node_2);
+    gracefulShutdown(node_3);
+    process.exit();
 });
 
-module.exports = { node_self, node_1, node_2, node_3, dbQuery };
+module.exports = { node_self, node_1, node_2, node_3, dbQuery, getConnection };

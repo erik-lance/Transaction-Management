@@ -1,5 +1,6 @@
 const mysql = require("mysql2");
 const conn = require("../models/conn.js");
+const dotenv = require("dotenv").config({path: './.env'});
 
 const controller = {
     home: (req, res) => {
@@ -12,128 +13,163 @@ const controller = {
     },
 
     movies: (req, res) => {
-          const data = {
-              title: "Movies",
-              styles: [],
-              scripts: ["loadMovies.js"],
-          }
-          res.render("movies", data);
-      },
+        const data = {
+            title: "Movies",
+            styles: [],
+            scripts: ["loadMovies.js"],
+        }
+        res.render("movies", data);
+    },
 
     moviesData: (req, res) => {
         console.log("Getting data...");
         // if you're in node 2
         if (process.env.NODE_NUM_CONFIGURATION == 2) {
-          console.log("You're in Node 2");
-          conn.node_2.query("SELECT * FROM movies", (err, result) => {
-              if (err) {
-                  console.log(err);
-                  res.status(500).send('Error retrieving data from database');
-              } else {
-                  const data = result.map(row => {
-                      return {
-                          id: row.id,
-                          name: row.name,
-                          year: row.year,
-                          rank: row.rank,
-                          genre: row.genre
-                      };
-                  });
-                  conn.node_3.query("SELECT * FROM movies", (err, result) => {
-                      if (err) {
-                          console.log(err);
-                          res.status(500).send('Error retrieving data from database');
-                      } else {
-                          const data2 = result.map(row => {
-                              return {
-                                  id: row.id,
-                                  name: row.name,
-                                  year: row.year,
-                                  rank: row.rank,
-                                  genre: row.genre
-                              };
-                          });
-                          const combinedData = data.concat(data2);
-                          const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
-                          uniqueData.sort((a, b) => a.id - b.id);
-                          res.json({ data: uniqueData });
+            conn.dbQuery(conn.node_2, "SELECT * FROM movies", [], (err, result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send('Error retrieving data from database');
+                } else {
+                    const data = result.map(row => {
+                        return {
+                            id: row.id,
+                            name: row.name,
+                            year: row.year,
+                            rank: row.rank,
+                            genre: row.genre
+                        };
+                    });
+                    conn.dbQuery(conn.node_3, "SELECT * FROM movies", [], (err, result) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send('Error retrieving data from database');
+                        } else {
+                            const data2 = result.map(row => {
+                                return {
+                                    id: row.id,
+                                    name: row.name,
+                                    year: row.year,
+                                    rank: row.rank,
+                                    genre: row.genre
+                                };
+                            });
+                            const combinedData = data.concat(data2);
+                            const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
+                            uniqueData.sort((a, b) => a.id - b.id);
+                            res.json({ data: uniqueData });
 
-                      }
-                  });
-              }
-          });
+                        }
+                    });
+                }
+            });
         }
         // if you're in node 3
         else if (process.env.NODE_NUM_CONFIGURATION == 3) {
-          console.log("You're in Node 3");
-          conn.node_3.query("SELECT * FROM movies", (err, result) => {
-              if (err) {
-                  console.log(err);
-                  res.status(500).send('Error retrieving data from database');
-              } else {
-                  const data = result.map(row => {
-                      return {
-                          id: row.id,
-                          name: row.name,
-                          year: row.year,
-                          rank: row.rank,
-                          genre: row.genre
-                      };
-                  });
-                  conn.node_2.query("SELECT * FROM movies", (err, result) => {
-                      if (err) {
-                          console.log(err);
-                          res.status(500).send('Error retrieving data from database');
-                      } else {
-                          const data2 = result.map(row => {
-                              return {
-                                  id: row.id,
-                                  name: row.name,
-                                  year: row.year,
-                                  rank: row.rank,
-                                  genre: row.genre
-                              };
-                          });
-                          const combinedData = data.concat(data2);
-                          const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
-                          uniqueData.sort((a, b) => a.id - b.id);
-                          res.json({ data: uniqueData });
-
-                      }
-                  });
-              }
-          });
+            conn.dbQuery(conn.node_3, "SELECT * FROM movies", [], (err, result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send('Error retrieving data from database');
+                } else {
+                    const data = result.map(row => {
+                        return {
+                            id: row.id,
+                            name: row.name,
+                            year: row.year,
+                            rank: row.rank,
+                            genre: row.genre
+                        };
+                    });
+                    conn.dbQuery(conn.node_2, "SELECT * FROM movies", [], (err, result) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send('Error retrieving data from database');
+                        } else {
+                            const data2 = result.map(row => {
+                                return {
+                                    id: row.id,
+                                    name: row.name,
+                                    year: row.year,
+                                    rank: row.rank,
+                                    genre: row.genre
+                                };
+                            });
+                            const combinedData = data.concat(data2);
+                            const uniqueData = [...new Map(combinedData.map(item => [item.id, item])).values()];
+                            uniqueData.sort((a, b) => a.id - b.id);
+                            res.json({ data: uniqueData });
+                        }
+                    });
+                }
+            });
         }
         // if you're in node 1
         else {
-          console.log("You're in Node 1");
-          conn.node_1.query("SELECT * FROM movies", (err, result) => {
-              if (err) {
-                  console.log(err);
-                  res.status(500).send('Error retrieving data from database');
-              } else {
-                  const data = result.map(row => {
-                      return {
-                          id: row.id,
-                          name: row.name,
-                          year: row.year,
-                          rank: row.rank,
-                          genre: row.genre
-                      };
-                  });
-                  res.json({ data });
-              }
-          });
+            conn.dbQuery(conn.node_1, "SELECT * FROM movies", [], (err, result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send('Error retrieving data from database');
+                } else {
+                    const data = result.map(row => {
+                        return {
+                            id: row.id,
+                            name: row.name,
+                            year: row.year,
+                            rank: row.rank,
+                            genre: row.genre
+                        };
+                    });
+                    res.json({ data });
+                }
+            });
         }
 
     },
+
+    connections: async (req, res) => {
+        console.log("RETRIEVING CONNECTIONS");
+        try {
+            // Gets connections of all 3 nodes and store into an array
+            const connections = [];
+    
+            // Check connection status for node 1
+            try {
+                await conn.node_1.getConnection();
+                connections.push(1); // Connected
+            } catch (err) {
+                connections.push(0); // Not connected
+            }
+    
+            // Check connection status for node 2
+            try {
+                await conn.node_2.getConnection();
+                connections.push(1); // Connected
+            } catch (err) {
+                connections.push(0); // Not connected
+            }
+    
+            // Check connection status for node 3
+            try {
+                await conn.node_3.getConnection();
+                connections.push(1); // Connected
+            } catch (err) {
+                connections.push(0); // Not connected
+            }
+    
+            // Returns the array of connections
+            res.json({ data: connections });
+        } catch (err) {
+            console.log(err);
+            res.status(500).send('Error retrieving connections');
+        }
+    },    
+    
 
     add: (req, res) => {
         res.render("add");
     },
 
     edit: (req, res) => {
-        conn.node_self.query("SELECT * FROM movies", (err, result) => {
+        conn.dbQuery(conn.node_self, "SELECT * FROM movies", [], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error opening page');
@@ -151,7 +187,7 @@ const controller = {
 
     editForm: (req, res) => {
         const movieId = req.params.id;
-        conn.node_self.query("SELECT * FROM movies WHERE id = ?", [movieId], (err, result) => {
+        conn.dbQuery(conn.node_self, "SELECT * FROM movies WHERE id = ?", [movieId], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error retrieving movie information. Please contact administrator.');
@@ -167,7 +203,7 @@ const controller = {
         const { name, year, rank, genre } = req.body;
         const movie = { name, year, rank, genre };
 
-        conn.node_self.query('INSERT INTO movies SET ?', movie, (err, result) => {
+        conn.dbQuery(conn.node_self, "INSERT INTO movies SET ?", movie, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error adding movie. Please contact administrator.');
@@ -180,7 +216,7 @@ const controller = {
 
     delete: (req, res) => {
         const movieID = req.params.id;
-        conn.node_self.query("DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
+        conn.dbQuery(conn.node_self, "DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error adding movie. Please contact administrator.');
@@ -231,8 +267,8 @@ const controller = {
 
         query += " WHERE id = ?";
         queryValues.push(movieId);
-
-        conn.node_self.query(query, queryValues, (err, result) => {
+        
+        conn.dbQuery(conn.node_self, query, queryValues, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error editing movie. Please contact administrator.");

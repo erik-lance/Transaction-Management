@@ -15,6 +15,7 @@ app.get('/moviesData', controller.moviesData);  // Gets data on movies for DataT
 app.get('/add', controller.add);                // Gets add database page
 app.get('/edit', controller.edit);              // Gets edit database page
 app.get('/editForm/:id', controller.editForm);  // Gets editInfo page
+app.get('/connections', controller.connections);  // Gets connections
 
 // POST
 app.post('/addMovie', controller.addMovie);
