@@ -20,7 +20,9 @@ jobs:
             cd ~/Transaction-Management
             git pull
             npm install
-            echo -n "export NODE_NUM_CONFIGURATION=1" >> .env
+            sed -i~ '/^NODE_NUM_CONFIGURATION=/s/=.*/=1/' .env
+            sed -i~ '/^NODE_SELF_HOST=/s/=.*/=10.0.0.4/' .env
+
             pm2 stop my-app                # Stop the existing PM2 process (if any)
             pm2 delete my-app              # Delete the existing PM2 process (if any)
             pm2 start index.js --name my-app  # Start your Node.js application with PM2
@@ -36,7 +38,9 @@ jobs:
             cd ~/Transaction-Management
             git pull
             npm install
-            echo -n "export NODE_NUM_CONFIGURATION=2" >> .env
+            sed -i~ '/^NODE_NUM_CONFIGURATION=/s/=.*/=2/' .env
+            sed -i~ '/^NODE_SELF_HOST=/s/=.*/=10.0.0.5/' .env
+            
             pm2 stop my-app                # Stop the existing PM2 process (if any)
             pm2 delete my-app              # Delete the existing PM2 process (if any)
             pm2 start index.js --name my-app  # Start your Node.js application with PM2
@@ -52,7 +56,9 @@ jobs:
             cd ~/Transaction-Management
             git pull
             npm install
-            echo -n "export NODE_NUM_CONFIGURATION=3" >> .env
+            sed -i~ '/^NODE_NUM_CONFIGURATION=/s/=.*/=3/' .env
+            sed -i~ '/^NODE_SELF_HOST=/s/=.*/=10.0.0.6/' .env
+            
             pm2 stop my-app                # Stop the existing PM2 process (if any)
             pm2 delete my-app              # Delete the existing PM2 process (if any)
             pm2 start index.js --name my-app  # Start your Node.js application with PM2
