@@ -1,4 +1,6 @@
+const util = require("util");
 const mysql = require("mysql2/promise");
+const retry = require("retry");
 const dotenv = require("dotenv").config({path: './.env'});
 
 // For each case, set the isolation level to read uncommitted, read committed, read repeatable and serializable.
@@ -25,13 +27,25 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await node_2.end();
         await node_3.end();
     });
+    
+    test.skip('dbQuery test', async () => {
+        // Insert Row
+        await dbQuery(test_conn, "INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
+        
+        // Check if row was inserted
+        const [rows] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
+        expect(rows.length).toBe(1);
+        
+        // Remove inserted row
+        await dbQuery(test_conn, "DELETE FROM movies WHERE name = 'Test Movie'");
+    });
 
     test('Node 1 and node 2 are reading the same item (Isolation: READ UNCOMMITTED)', async () => {
         // Insert row
-        await test_conn.query("INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
+        await dbQuery(test_conn, "INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
 
         // Check if row was inserted
-        const [rows] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+        const [rows] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
         expect(rows.length).toBe(1);
 
         // Set isolation level to read uncommitted
@@ -39,14 +53,10 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await node_2.query("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
 
         // Begin transaction in node 1
-        await node_1.query("START TRANSACTION");
-        const [rows1] = await node_1.query("SELECT * FROM movies WHERE name = 'Test Movie'");
-        await node_1.query("COMMIT");
+        const [rows1] = await dbQuery(node_1, "SELECT * FROM movies WHERE name = 'Test Movie'");
 
         // Begin transaction in node 2
-        await node_2.query("START TRANSACTION");
-        const [rows2] = await node_2.query("SELECT * FROM movies WHERE name = 'Test Movie'");
-        await node_2.query("COMMIT");
+        const [rows2] = await dbQuery(node_2, "SELECT * FROM movies WHERE name = 'Test Movie'");
 
         // Verify if row was inserted
         expect(rows1.length).toBe(1);
@@ -66,16 +76,16 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await test_conn.query("DELETE FROM movies WHERE name = 'Test Movie'");
 
         // Check if row was removed
-        const [rows3] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+        const [rows3] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
         expect(rows3.length).toBe(0);
     });
 
     test('Node 1 and node 2 are reading the same item (Isolation: READ COMMITTED)', async () => {
         // Insert row
-        await test_conn.query("INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
+        await dbQuery(test_conn, "INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
 
         // Check if row was inserted
-        const [rows] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+        const [rows] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
         expect(rows.length).toBe(1);
 
         // Set isolation level to read uncommitted
@@ -83,14 +93,10 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await node_2.query("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
 
         // Begin transaction in node 1
-        await node_1.query("START TRANSACTION");
-        const [rows1] = await node_1.query("SELECT * FROM movies WHERE name = 'Test Movie'");
-        await node_1.query("COMMIT");
+        const [rows1] = await dbQuery(node_1, "SELECT * FROM movies WHERE name = 'Test Movie'");
 
         // Begin transaction in node 2
-        await node_2.query("START TRANSACTION");
-        const [rows2] = await node_2.query("SELECT * FROM movies WHERE name = 'Test Movie'");
-        await node_2.query("COMMIT");
+        const [rows2] = await dbQuery(node_2, "SELECT * FROM movies WHERE name = 'Test Movie'");
 
         // Verify if row was inserted
         expect(rows1.length).toBe(1);
@@ -110,16 +116,16 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await test_conn.query("DELETE FROM movies WHERE name = 'Test Movie'");
 
         // Check if row was removed
-        const [rows3] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+        const [rows3] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
         expect(rows3.length).toBe(0);
     });
 
     test('Node 1 and node 2 are reading the same item (Isolation: REPEATABLE READ)', async () => {
         // Insert row
-        await test_conn.query("INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
+        await dbQuery(test_conn, "INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
 
         // Check if row was inserted
-        const [rows] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+        const [rows] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
         expect(rows.length).toBe(1);
 
         // Set isolation level to read uncommitted
@@ -127,14 +133,10 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await node_2.query("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ");
 
         // Begin transaction in node 1
-        await node_1.query("START TRANSACTION");
-        const [rows1] = await node_1.query("SELECT * FROM movies WHERE name = 'Test Movie'");
-        await node_1.query("COMMIT");
+        const [rows1] = await dbQuery(node_1, "SELECT * FROM movies WHERE name = 'Test Movie'");
 
         // Begin transaction in node 2
-        await node_2.query("START TRANSACTION");
-        const [rows2] = await node_2.query("SELECT * FROM movies WHERE name = 'Test Movie'");
-        await node_2.query("COMMIT");
+        const [rows2] = await dbQuery(node_2, "SELECT * FROM movies WHERE name = 'Test Movie'");
 
         // Verify if row was inserted
         expect(rows1.length).toBe(1);
@@ -154,16 +156,16 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await test_conn.query("DELETE FROM movies WHERE name = 'Test Movie'");
 
         // Check if row was removed
-        const [rows3] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+        const [rows3] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
         expect(rows3.length).toBe(0);
     });
 
     test('Node 1 and node 2 are reading the same item (Isolation: SERIALIZABLE)', async () => {
         // Insert row
-        await test_conn.query("INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
+        await dbQuery(test_conn, "INSERT INTO movies (name, year, `rank`, genre) VALUES (?,?,?,?)", ['Test Movie', 2020, 1, 'Action']);
 
         // Check if row was inserted
-        const [rows] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+        const [rows] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
         expect(rows.length).toBe(1);
 
         // Set isolation level to read uncommitted
@@ -171,14 +173,10 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await node_2.query("SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 
         // Begin transaction in node 1
-        await node_1.query("START TRANSACTION");
-        const [rows1] = await node_1.query("SELECT * FROM movies WHERE name = 'Test Movie'");
-        await node_1.query("COMMIT");
+        const [rows1] = await dbQuery(node_1, "SELECT * FROM movies WHERE name = 'Test Movie'");
 
         // Begin transaction in node 2
-        await node_2.query("START TRANSACTION");
-        const [rows2] = await node_2.query("SELECT * FROM movies WHERE name = 'Test Movie'");
-        await node_2.query("COMMIT");
+        const [rows2] = await dbQuery(node_2, "SELECT * FROM movies WHERE name = 'Test Movie'");
 
         // Verify if row was inserted
         expect(rows1.length).toBe(1);
@@ -198,7 +196,7 @@ describe('Concurrent Transactions in two or more nodes reading the same item', (
         await test_conn.query("DELETE FROM movies WHERE name = 'Test Movie'");
 
         // Check if row was removed
-        const [rows3] = await test_conn.query("SELECT * FROM movies WHERE name = 'Test Movie'");
+        const [rows3] = await dbQuery(test_conn, "SELECT * FROM movies WHERE name = 'Test Movie'");
         expect(rows3.length).toBe(0);
     });
 });
@@ -270,6 +268,41 @@ describe('Concurrent transactions in two or more nodes are writing (update / del
     test.todo('Node 1 is deleting and node 2 is deleting the same item (Isolation: REPEATABLE READ)');
     test.todo('Node 1 is deleting and node 2 is deleting the same item (Isolation: SERIALIZABLE)');
 });
+
+/**
+ * This function is used to query the database. It will handle
+ * transactions to a crashed node while it is recovering.
+ */
+async function dbQuery(db, query, content) {
+    try {
+        // Begin the transaction
+        await db.beginTransaction();
+        
+        // Perform the query within the transaction
+        const result = await db.query(query, content);
+        
+        // Commit the transaction
+        await db.commit();
+    
+        // Return the result of the query
+        return result;
+    } catch (err) {
+        // If there is an error, rollback the transaction
+        await db.rollback();
+        throw err; // or handle the error as needed
+    }
+}
+
+
+
+
+const retry_operation = retry.operation({
+    retries: 10,            // 10 times
+    factor: 3,              // 3 * 1 = 3, 3 * 3 = 9, 3 * 9 = 27, etc.
+    minTimeout: 1 * 1000,   // 1 second
+    maxTimeout: 60 * 1000,  // 1 minute
+    randomize: true,        // Randomize the timeouts by multiplying
+})
 
 // Functions
 async function connectToLocalDB() {
