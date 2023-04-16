@@ -185,7 +185,7 @@ function gracefulShutdown(pool) {
 }
 
 function listen_connections() {
-    let recentlyDisconnected = false;
+    let recentlyDisconnected = true;
     // Periodically check the connections
     setInterval( async () => {
         let connection = [];
