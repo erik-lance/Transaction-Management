@@ -51,7 +51,7 @@ const controller = {
                     conn.dbQuery(node === conn.node_2 ? conn.node_3 : conn.node_2, "SELECT * FROM movies", [], (err, result) => {
                         if (err) {
                             console.log(err);
-                            res.status(500).send('Error retrieving data from database');
+                            res.status(500).send('Error retrieving data from slave');
                         } else {
                             const data2 = result.map(row => {
                                 return {
@@ -126,8 +126,16 @@ const controller = {
     },
 
     editForm: (req, res) => {
+        let node;
+        if (process.env.NODE_NUM_CONFIGURATION == 2) {
+            node = conn.node_2;
+        } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
+            node = conn.node_3;
+        } else {
+            node = conn.node_1;
+        }
         const movieId = req.params.id;
-        conn.dbQuery(conn.node_self, "SELECT * FROM movies WHERE id = ?", [movieId], (err, result) => {
+        conn.dbQuery(node, "SELECT * FROM movies WHERE id = ?", [movieId], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error retrieving movie information. Please contact administrator.');
@@ -146,9 +154,18 @@ const controller = {
         conn.dbQuery(conn.node_self, "INSERT INTO movies SET ?", movie, (err, result) => {
             if (err) {
                 console.log(err);
+            } else {
+                console.log('Movie added to master');
+            }
+        });
+
+        let node = year < 1980 ? conn.node_2 : conn.node_3;
+        conn.dbQuery(node, year < 1980 ? "INSERT INTO movies_2 SET ?" : "INSERT INTO movies_3 SET ?" , movie, (err, result) => {
+            if (err) {
+                console.log(err);
                 res.status(500).send('Error adding movie. Please contact administrator.');
             } else {
-                console.log('Movie added to database');
+                console.log('Movie added to slave');
                 res.redirect('/movies');
             }
         });
@@ -156,12 +173,21 @@ const controller = {
 
     delete: (req, res) => {
         const movieID = req.params.id;
+        const year = req.params.year;
         conn.dbQuery(conn.node_self, "DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
             if (err) {
                 console.log(err);
-                res.status(500).send('Error adding movie. Please contact administrator.');
             } else {
-                console.log(`Movie ID ${movieID} deleted from database`);
+                console.log(`Movie ID ${movieID} deleted from master`);
+            }
+        });
+        let node = year < 1980 ? conn.node_2 : conn.node_3;
+        conn.dbQuery(node, year < 1980 ? "DELETE FROM movies_2 WHERE id = ?" : "DELETE FROM movies_3 WHERE id = ?", [movieID], (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Error deleting movie. Please contact administrator.');
+            } else {
+                console.log(`Movie ID ${movieID} deleted from slave`);
                 res.json({success: true});
             }
         });
@@ -170,54 +196,113 @@ const controller = {
     update: (req, res) => {
         const { name, year, rank, genre } = req.body;
         const movieId = req.params.id;
-
+        const trueYear = req.params.year;
+    
         const queryValues = [];
         let query = "UPDATE movies SET ";
-
+    
         if (name !== undefined && name !== '') {
             query += " name = ?,";
             queryValues.push(name);
         } else {
             query += " name = NULL,";
         }
-
+    
         if (year !== undefined && year !== '') {
             query += " year = ?,";
             queryValues.push(year);
         } else {
             query += " year = NULL,";
         }
-
+    
         if (rank !== undefined && rank !== '') {
             query += " `rank` = ?,";
             queryValues.push(rank);
         } else {
             query += " `rank` = NULL,";
         }
-
+    
         if (genre !== undefined && genre !== '') {
             query += " genre = ?,";
             queryValues.push(genre);
         } else {
             query += " genre = NULL,";
         }
-
+    
         // Remove the last comma from the query string
         query = query.slice(0, -1);
-
+    
         query += " WHERE id = ?";
         queryValues.push(movieId);
         
         conn.dbQuery(conn.node_self, query, queryValues, (err, result) => {
             if (err) {
                 console.log(err);
+            } else {
+                console.log(`Movie ID ${movieId} edited in master`);
+            }
+        });
+    
+        queryValues.length = 0;
+        query = "";
+        
+        // For slave
+        let node;
+        if(trueYear < 1980){
+            node = conn.node_2;
+            query = "UPDATE movies_2 SET ";
+        }
+        else{
+            node = conn.node_3;
+            query = "UPDATE movies_3 SET ";
+        }
+    
+        if (name !== undefined && name !== '') {
+            query += " name = ?,";
+            queryValues.push(name);
+        } else {
+            query += " name = NULL,";
+        }
+    
+        if (year !== undefined && year !== '') {
+            query += " year = ?,";
+            queryValues.push(year);
+        } else {
+            query += " year = NULL,";
+        }
+    
+        if (rank !== undefined && rank !== '') {
+            query += " `rank` = ?,";
+            queryValues.push(rank);
+        } else {
+            query += " `rank` = NULL,";
+        }
+    
+        if (genre !== undefined && genre !== '') {
+            query += " genre = ?,";
+            queryValues.push(genre);
+        } else {
+            query += " genre = NULL,";
+        }
+    
+        // Remove the last comma from the query string
+        query = query.slice(0, -1);
+    
+        query += " WHERE id = ?";
+        queryValues.push(movieId);
+    
+        conn.dbQuery(node, query, queryValues, (err, result) => {
+            if (err) {
+                console.log(err);
                 res.status(500).send("Error editing movie. Please contact administrator.");
             } else {
-                console.log(`Movie ID ${movieId} edited in database`);
-                res.redirect("/edit");
+                console.log(`Movie ID ${movieId} edited in slave`);
+                res.redirect('/edit');
             }
         });
     }
+    
+    
 };
 
 
