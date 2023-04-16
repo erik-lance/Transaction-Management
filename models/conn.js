@@ -289,9 +289,9 @@ async function commitTransaction(log, currnode, node_1, node_2, node_3) {
 
     // Set destination node
     let node = [];
-    if (log.t_dest == 1) node = node_1;
-    else if (log.t_dest == 2) node = node_2;
-    else if (log.t_dest == 3) node = node_3;
+    if (log.T_Dest == 1) node = node_1;
+    else if (log.T_Dest == 2) node = node_2;
+    else if (log.T_Dest == 3) node = node_3;
     else {
         console.log("Error: Unknown destination node");
         console.log(log);
