@@ -8,7 +8,7 @@ $(document).ready(function () {
             // Print for now
             console.log(data);
 
-            $.each(data, function(index, value) {
+            $.each(data.data, function(index, value) {
               console.log("Checking Availabiltiy");
               const className = ".avail" + (index + 1);
               if (value == 1) {
