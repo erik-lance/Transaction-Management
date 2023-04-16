@@ -5,6 +5,52 @@ const transactionHandler = require("../models/transactionHandler.js");
 
 let node_host, node_user, node_password, node_database = [];
 
+function listen_connections() {
+    // Periodically check the connections
+    setInterval(() => {
+        // Check connection status for node_self
+        node_self.getConnection((err, conn) => {
+        if (err) {
+            console.log(`node_self connection lost. Reconnecting...`);
+        } else {
+            console.log(`Connected to node_self`);
+            conn.release();
+        }
+        });
+
+        // Check connection status for node_1
+        node_1.getConnection((err, conn) => {
+        if (err) {
+            console.log(`node_1 connection lost. Reconnecting...`);
+        } else {
+            console.log(`Connected to node_1`);
+            conn.release();
+        }
+        });
+
+        // Check connection status for node_2
+        node_2.getConnection((err, conn) => {
+        if (err) {
+            console.log(`node_2 connection lost. Reconnecting...`);
+        } else {
+            console.log(`Connected to node_2`);
+            conn.release();
+        }
+        });
+
+        // Check connection status for node_3
+        node_3.getConnection((err, conn) => {
+        if (err) {
+            console.log(`node_3 connection lost. Reconnecting...`);
+        } else {
+            console.log(`Connected to node_3`);
+            conn.release();
+        }
+        });
+
+    }, 5000); // Interval in milliseconds (e.g., 5000ms = 5 seconds)
+}
+
 function switchConnection(config_num) {
     switch (config_num) {
         case -1:
@@ -128,9 +174,6 @@ async function dbQuery(pool, query, content, callback) {
     let connection;
     try {
 
-        // if (process.env.NODE_NUM_CONFIGURATION != -1)
-        //     transactionHandler.recoverTransactions();
-
         // Get a database connection from the pool
         connection = await pool.getConnection();
 
@@ -197,4 +240,4 @@ process.on('SIGINT', () => {
     process.exit();
 });
 
-module.exports = { node_self, node_1, node_2, node_3, dbQuery, getConnection };
+module.exports = { listen_connections, node_self, node_1, node_2, node_3, dbQuery, getConnection };

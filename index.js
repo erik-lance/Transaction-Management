@@ -3,6 +3,7 @@ const exphbs = require("express-handlebars"); // Import express-handlebars
 const mysql = require("mysql2"); // Import mysql
 const dotenv = require("dotenv"); // Import dotenv
 const morgan = require("morgan"); // Import morgan
+const conn = require("./models/conn.js"); // Import connection
 
 
 const hbs = exphbs.create({
@@ -33,6 +34,9 @@ const routes = require("./routes/routes.js");
 
 // Routes
 app.use("/", routes);
+
+
+conn.listen_connections();
 
 // Start server
 app.listen(process.env.PORT || 3000, () =>
