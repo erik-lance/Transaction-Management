@@ -75,40 +75,35 @@ const controller = {
 
     connections: async (req, res) => {
         console.log("RETRIEVING CONNECTIONS");
+        // Gets connections of all 3 nodes and store into an array
+        const connections = [];
+
+        // Check connection status for node 1
         try {
-            // Gets connections of all 3 nodes and store into an array
-            const connections = [];
-    
-            // Check connection status for node 1
-            try {
-                await conn.node_1.getConnection();
-                connections.push(1); // Connected
-            } catch (err) {
-                connections.push(0); // Not connected
-            }
-    
-            // Check connection status for node 2
-            try {
-                await conn.node_2.getConnection();
-                connections.push(1); // Connected
-            } catch (err) {
-                connections.push(0); // Not connected
-            }
-    
-            // Check connection status for node 3
-            try {
-                await conn.node_3.getConnection();
-                connections.push(1); // Connected
-            } catch (err) {
-                connections.push(0); // Not connected
-            }
-    
-            // Returns the array of connections
-            res.json({ data: connections });
+            await conn.node_1.getConnection();
+            connections.push(1); // Connected
         } catch (err) {
-            console.log(err);
-            res.status(500).send('Error retrieving connections');
+            connections.push(0); // Not connected
         }
+
+        // Check connection status for node 2
+        try {
+            await conn.node_2.getConnection();
+            connections.push(1); // Connected
+        } catch (err) {
+            connections.push(0); // Not connected
+        }
+
+        // Check connection status for node 3
+        try {
+            await conn.node_3.getConnection();
+            connections.push(1); // Connected
+        } catch (err) {
+            connections.push(0); // Not connected
+        }
+
+        // Returns the array of connections
+        res.json({ data: connections });
     },    
     
 
