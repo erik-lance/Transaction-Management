@@ -9,6 +9,7 @@ $(document).ready(function () {
             console.log(data);
 
             $.each(data, function(index, value) {
+              console.log("Checking Availabiltiy");
               const className = ".avail" + (index + 1);
               if (value == 1) {
                 status = "ONLINE";
