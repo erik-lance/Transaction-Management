@@ -57,6 +57,8 @@ function recoverTransactions() {
 }
 
 async function grabLogsOfPool(dbPool) {
+    console.log("GRABBING LOGS")
+    console.log(dbPool)
     let logs = [];
 
     let connection = await dbPool.getConnection();
@@ -69,6 +71,8 @@ async function grabLogsOfPool(dbPool) {
         logs.push(result[i]);
     }
 
+    console.log("ACQUIRED LOGS")
+    console.log(logs)
     return logs;
 }
 
