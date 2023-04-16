@@ -155,7 +155,7 @@ const controller = {
         });
 
         let node = year < 1980 ? conn.node_2 : conn.node_3;
-        conn.dbQuery(node, year < 1980 ? "INSERT INTO movies_2 SET ?" : "INSERT INTO movies_3 SET ?" , movie, (err, result) => {
+        conn.dbQuery(node, year < 1980 ? "INSERT INTO movies SET ?" : "INSERT INTO movies SET ?" , movie, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error adding movie. Please contact administrator.');
@@ -177,7 +177,7 @@ const controller = {
             }
         });
         let node = year < 1980 ? conn.node_2 : conn.node_3;
-        conn.dbQuery(node, year < 1980 ? "DELETE FROM movies_2 WHERE id = ?" : "DELETE FROM movies_3 WHERE id = ?", [movieID], (err, result) => {
+        conn.dbQuery(node, year < 1980 ? "DELETE FROM movies WHERE id = ?" : "DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error deleting movie. Please contact administrator.');
@@ -245,11 +245,11 @@ const controller = {
         let node;
         if(trueYear < 1980){
             node = conn.node_2;
-            query = "UPDATE movies_2 SET ";
+            query = "UPDATE movies SET ";
         }
         else{
             node = conn.node_3;
-            query = "UPDATE movies_3 SET ";
+            query = "UPDATE movies SET ";
         }
     
         if (name !== undefined && name !== '') {
