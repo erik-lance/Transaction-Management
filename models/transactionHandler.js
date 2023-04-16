@@ -11,43 +11,11 @@ const conn = require("../models/conn.js");
  * If the transaction is successfully committed, else, it is
  * left in the local logs.
  */
+
 function recoverTransactions() {
-    const [node_1_logs] = []
-    const [node_2_logs] = []
-    const [node_3_logs] = []
-
-    // Get node 1 logs
-    conn.dbQuery(conn.node_1, "SELECT * FROM mco2_logs", [], (err, result) => {
-        if (err) {
-            console.log(err);
-        } else {
-            for (let i = 0; i < result.length; i++) {
-                node_1_logs.push(result[i]);
-            }
-        }
-    });
-
-    // Get node 2 logs
-    conn.dbQuery(conn.node_2, "SELECT * FROM mco2_logs", [], (err, result) => {
-        if (err) {
-            console.log(err);
-        } else {
-            for (let i = 0; i < result.length; i++) {
-                node_2_logs.push(result[i]);
-            }
-        }
-    });
-
-    // Get node 3 logs
-    conn.dbQuery(conn.node_3, "SELECT * FROM mco2_logs", [], (err, result) => {
-        if (err) {
-            console.log(err);
-        } else {
-            for (let i = 0; i < result.length; i++) {
-                node_3_logs.push(result[i]);
-            }
-        }
-    });
+    const [node_1_logs] = grabLogsOfPool(conn.node_1);
+    const [node_2_logs] = grabLogsOfPool(conn.node_2);
+    const [node_3_logs] = grabLogsOfPool(conn.node_3);
 
     // Inserts the logs into the database
     for (let i = 0; i < 3; i++) {
@@ -68,43 +36,76 @@ function recoverTransactions() {
         }
 
         for (let j = 0; j < node_logs.length; j++) {
-            let log = node_logs[i];
+            let log = node_logs[j];
             let query = "INSERT INTO movies (name, year, `rank`, genre) VALUES (?, ?, ?, ?)";
             let content = [log.name, log.year, log.rank, log.genre];
 
-            // Set destination node
-            if (node_logs.t_dest == 1) node = conn.node_1;
-            else if (node_logs.t_dest == 2) node = conn.node_2;
-            else if (node_logs.t_dest == 3) node = conn.node_3;
+            let logsSourceNode = [];
+            if (i == 0) logsSourceNode = conn.node_1;
+            else if (i == 1) logsSourceNode = conn.node_2;
+            else if (i == 2) logsSourceNode = conn.node_3;
 
-            node.query(query, content, (err, result) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log("Recovered transaction: "+result);
-
-                    // Delete the log from the local logs
-                    let deleteQuery = "DELETE FROM mco2_logs WHERE id = ?";
-                    let deleteContent = [log.id];
-                    let deleteNode = [];
-
-                    if (i == 0) deleteNode = conn.node_1;
-                    else if (i == 1) deleteNode = conn.node_2;
-                    else if (i == 2) deleteNode = conn.node_3;
-                    
-
-                    deleteNode.query(deleteQuery, deleteContent, (err, result) => {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            console.log("Local log deleted: "+result);
-                        }
-                    });
-                }
-            });
+            // Commit the transaction
+            commitTransaction(log, node);
         }
     }
 }
+
+function grabLogsOfPool(dbPool) {
+    let logs = [];
+
+    conn.dbQuery(dbPool, "SELECT * FROM mco2_logs", [], (err, result) => {
+        if (err) {
+            console.log(err);
+            return [];
+        } else {
+            for (let i = 0; i < result.length; i++) {
+                logs.push(result[i]);
+            }
+
+            return logs;
+        }
+    });
+}
+
+/**
+ * This function is used to commit a transaction to the database.
+ * @param {*} log The log to be committed
+ * @param {*} currnode The node that is currently being used
+ */
+function commitTransaction(log, currnode) {
+    let query = "INSERT INTO movies (name, year, `rank`, genre) VALUES (?, ?, ?, ?)";
+    let content = [log.name, log.year, log.rank, log.genre];
+
+    // Set destination node
+    let node = [];
+    if (log.t_dest == 1) node = conn.node_1;
+    else if (log.t_dest == 2) node = conn.node_2;
+    else if (log.t_dest == 3) node = conn.node_3;
+
+    node.query(query, content, (err, result) => {
+        if (err) {
+            console.log(err)
+        } else {
+            console.log("Recovered transaction: "+result);
+
+            // Delete the log from the local logs
+            let deleteQuery = "DELETE FROM mco2_logs WHERE id = ?";
+            let deleteContent = [log.id];
+            let deleteNode = currnode;
+
+            deleteNode.query(deleteQuery, deleteContent, (err, result) => {
+                if (err) {
+                    console.log('Error during log deletion: ')
+                    console.log(err);
+                } else {
+                    console.log("Local log deleted: "+result);
+                }
+            });
+        }
+    });
+}
+
 
 function storeQuery(dbPool, query, content) {
     let t_type = query.split(" ")[0];   // Get the first word of the query
@@ -134,4 +135,4 @@ function storeQuery(dbPool, query, content) {
 
 }
 
-module.exports = { storeQuery };
+module.exports = { storeQuery, recoverTransactions };
