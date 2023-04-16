@@ -9,45 +9,39 @@ function listen_connections() {
     // Periodically check the connections
     setInterval(() => {
         // Check connection status for node_self
-        node_self.getConnection((err, conn) => {
-        if (err) {
-            console.log(`node_self connection lost. Reconnecting...`);
-        } else {
-            console.log(`Connected to node_self`);
-            conn.release();
-        }
-        });
+        console.log("LISTENING FOR CONNECTIONS: ")
 
-        // Check connection status for node_1
-        node_1.getConnection((err, conn) => {
-        if (err) {
-            console.log(`node_1 connection lost. Reconnecting...`);
-        } else {
-            console.log(`Connected to node_1`);
-            conn.release();
+        if (process.env.NODE_SELF_HOST == 1) {
+            // Check connection status for node_1
+            node_1.getConnection((err, conn) => {
+                if (err) {
+                    console.log(`node_1 connection lost. Reconnecting...`);
+                } else {
+                    console.log(`Connected to node_1`);
+                    conn.release();
+                }
+            });
+        } else if (process.env.NODE_SELF_HOST == 2) {
+            // Check connection status for node_2
+            node_2.getConnection((err, conn) => {
+                if (err) {
+                    console.log(`node_2 connection lost. Reconnecting...`);
+                } else {
+                    console.log(`Connected to node_2`);
+                    conn.release();
+                }
+            });
+        } else if (process.env.NODE_SELF_HOST == 3) {
+            // Check connection status for node_3
+            node_3.getConnection((err, conn) => {
+                if (err) {
+                    console.log(`node_3 connection lost. Reconnecting...`);
+                } else {
+                    console.log(`Connected to node_3`);
+                    conn.release();
+                }
+            });
         }
-        });
-
-        // Check connection status for node_2
-        node_2.getConnection((err, conn) => {
-        if (err) {
-            console.log(`node_2 connection lost. Reconnecting...`);
-        } else {
-            console.log(`Connected to node_2`);
-            conn.release();
-        }
-        });
-
-        // Check connection status for node_3
-        node_3.getConnection((err, conn) => {
-        if (err) {
-            console.log(`node_3 connection lost. Reconnecting...`);
-        } else {
-            console.log(`Connected to node_3`);
-            conn.release();
-        }
-        });
-
     }, 5000); // Interval in milliseconds (e.g., 5000ms = 5 seconds)
 }
 
