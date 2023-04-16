@@ -44,8 +44,6 @@ function recoverTransactions() {
 
         for (let j = 0; j < node_logs.length; j++) {
             let log = node_logs[j];
-            let query = "INSERT INTO movies (name, year, `rank`, genre) VALUES (?, ?, ?, ?)";
-            let content = [log.name, log.year, log.rank, log.genre];
 
             let logsSourceNode = [];
             if (i == 0) logsSourceNode = conn.node_1;
@@ -58,23 +56,20 @@ function recoverTransactions() {
     }
 }
 
-function grabLogsOfPool(dbPool) {
+async function grabLogsOfPool(dbPool) {
     let logs = [];
 
-    dbPool.query("SELECT * FROM mco2_logs", [], (err, result) => {
-        if (err) {
-            console.log(err);
-            return [];
-        } else {
-            console.log("Grabbed logs from pool")
-            console.log(result)
-            for (let i = 0; i < result.length; i++) {
-                logs.push(result[i]);
-            }
+    let connection = await dbPool.getConnection();
 
-            return logs;
-        }
-    });
+    const result = await dbPool.query("SELECT * FROM mco2_logs");
+
+    connection.release();
+
+    for (let i = 0; i < result.length; i++) {
+        logs.push(result[i]);
+    }
+
+    return logs;
 }
 
 /**
@@ -82,7 +77,7 @@ function grabLogsOfPool(dbPool) {
  * @param {*} log The log to be committed
  * @param {*} currnode The node that is currently being used
  */
-function commitTransaction(log, currnode) {
+async function commitTransaction(log, currnode) {
     let query = "INSERT INTO movies (name, year, `rank`, genre) VALUES (?, ?, ?, ?)";
     let content = [log.name, log.year, log.rank, log.genre];
 
@@ -92,7 +87,10 @@ function commitTransaction(log, currnode) {
     else if (log.t_dest == 2) node = conn.node_2;
     else if (log.t_dest == 3) node = conn.node_3;
 
-    node.query(query, content, (err, result) => {
+    let connection = await node.getConnection();
+
+
+    await connection.query(query, content, (err, result) => {
         if (err) {
             console.log(err)
         } else {
@@ -116,16 +114,17 @@ function commitTransaction(log, currnode) {
 }
 
 
-function storeQuery(dbPool, query, content) {
+async function storeQuery(dbPool, query, content) {
     let t_type = query.split(" ")[0];   // Get the first word of the query
     let t_dest = [];    // Destination node(s) for the transaction
 
     console.log("STORING FAILED TRANSACTION: "+query+content);
 
-    console.log("DB HOST: "+dbPool.config)
+    let connection = await dbPool.getConnection();
+    console.log("DB HOST: "+connection.config)
 
     // Determine the destination node(s) for the transaction   
-    let hostname = dbPool.config.host; 
+    let hostname = connection.config.host; 
     if (hostname == '10.0.0.4') { t_dest = 1 }
     else if (hostname == '10.0.0.5') { t_dest = 2 }
     else if (hostname == '10.0.0.6') { t_dest = 3 }
@@ -138,13 +137,19 @@ function storeQuery(dbPool, query, content) {
     let localQuery = "INSERT INTO mco2_logs (name, year, `rank`, genre, t_type, t_dest) VALUES (?, ?, ?, ?, ?, ?)";
     let localContent = [content.name, content.year, content.rank, content.genre, t_type, t_dest];
 
-    conn.node_self.query(localQuery, localContent, (err, result) => {
+    let queryConnection = await conn.node_self.getConnection();
+
+    await queryConnection.query(localQuery, localContent, (err, result) => {
         if (err) {
             console.log(err);
         } else {
             console.log("Local log inserted: "+result);
         }
     });
+
+    // Close
+    connection.release();
+    queryConnection.release();
 
 }
 
