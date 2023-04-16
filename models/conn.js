@@ -248,7 +248,7 @@ function listen_connections() {
             // If the node was recently disconnected, we need to
             // recover transactions that were not committed
             if (connected && recentlyDisconnected) {
-                await transactionHandler.recoverTransactions(connection);
+                await transactionHandler.recoverTransactions(connection, node_1, node_2, node_3);
             }
             recentlyDisconnected = false;
         } else {
