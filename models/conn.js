@@ -189,39 +189,25 @@ function listen_connections() {
     // Periodically check the connections
     setInterval( async () => {
         // Check connection status for node_self
-        if (process.env.NODE_NUM_CONFIGURATION == 1) {
-            // Check connection status for node_1
-            let connection = await node_1.getConnection();
-            if (connection) {
-                console.log('Connected to node_1');
-                connection.release();
-            } else {
-                console.log('node_1 connection lost. Reconnecting...');
-            }
 
+
+        let connection = [];
+        
+        if (process.env.NODE_NUM_CONFIGURATION == 1) 
+            connection = await node_1.getConnection();
+        else if (process.env.NODE_NUM_CONFIGURATION == 2)
+            connection = await node_2.getConnection();
+        else if (process.env.NODE_NUM_CONFIGURATION == 3)
+            connection = await node_3.getConnection();
+
+        if (connection) {
+            console.log('Connected to own node');
             connection.release();
-
-        } else if (process.env.NODE_NUM_CONFIGURATION == 2) {
-            // Check connection status for node_2
-            node_2.getConnection((err, conn) => {
-                if (err) {
-                    console.log('node_2 connection lost. Reconnecting...');
-                } else {
-                    console.log('Connected to node_2');
-                    conn.release();
-                }
-            });
-        } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
-            // Check connection status for node_3
-            node_3.getConnection((err, conn) => {
-                if (err) {
-                    console.log('node_3 connection lost. Reconnecting...');
-                } else {
-                    console.log('Connected to node_3');
-                    node_3.release();
-                }
-            });
+        } else {
+            console.log('own node connection lost. Reconnecting...');
         }
+
+        connection.release();
     }, 10000); // Interval in milliseconds (e.g., 5000ms = 5 seconds)
 }
 
