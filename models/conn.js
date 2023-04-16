@@ -187,18 +187,20 @@ function gracefulShutdown(pool) {
 
 function listen_connections() {
     // Periodically check the connections
-    setInterval(() => {
+    setInterval( async () => {
         // Check connection status for node_self
         if (process.env.NODE_NUM_CONFIGURATION == 1) {
             // Check connection status for node_1
-            node_1.getConnection((err, conn) => {
-                if (err) {
-                    console.log('node_1 connection lost. Reconnecting...');
-                } else {
-                    console.log('Connected to node_1');
-                    node_1.release();
-                }
-            });
+            let connection = await node_1.getConnection();
+            if (connection) {
+                console.log('Connected to node_1');
+                connection.release();
+            } else {
+                console.log('node_1 connection lost. Reconnecting...');
+            }
+
+            connection.release();
+
         } else if (process.env.NODE_NUM_CONFIGURATION == 2) {
             // Check connection status for node_2
             node_2.getConnection((err, conn) => {
@@ -206,7 +208,7 @@ function listen_connections() {
                     console.log('node_2 connection lost. Reconnecting...');
                 } else {
                     console.log('Connected to node_2');
-                    node_2.release();
+                    conn.release();
                 }
             });
         } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
