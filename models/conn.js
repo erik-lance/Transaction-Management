@@ -197,10 +197,9 @@ async function storeQuery(dbPool, query, content) {
     console.log("DB HOST: "+dbPool.config)
 
     // Determine the destination node(s) for the transaction   
-    let hostname = dbPool.config.host; 
-    if (hostname == '10.0.0.4') { t_dest = 1 }
-    else if (hostname == '10.0.0.5') { t_dest = 2 }
-    else if (hostname == '10.0.0.6') { t_dest = 3 }
+    if (dbPool == node_1) { t_dest = 1; }
+    else if (dbPool == node_2) { t_dest = 2; }
+    else if (dbPool == node_3) { t_dest = 3; }
     else {
         t_dest = -1
         console.log("Error: Unknown hostname");
