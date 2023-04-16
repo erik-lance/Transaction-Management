@@ -223,33 +223,33 @@ function gracefulShutdown(pool) {
 }
 
 function listen_connections() {
-    let recentlyDisconnected = true;
+    let recentlyDisconnected = false;
+    let connected = false;
     // Periodically check the connections
     setInterval( async () => {
         let connection = [];
-        
-        if (process.env.NODE_NUM_CONFIGURATION == 1) 
-            connection = await node_1.getConnection();
-        else if (process.env.NODE_NUM_CONFIGURATION == 2)
-            connection = await node_2.getConnection();
-        else if (process.env.NODE_NUM_CONFIGURATION == 3)
-            connection = await node_3.getConnection();
-
-        if (recentlyDisconnected && connection) {
-            await transactionHandler.recoverTransactions(connection, node_1, node_2, node_3);
-            recentlyDisconnected = false;
+        try {
+            if (process.env.NODE_NUM_CONFIGURATION == 1) 
+                connection = await node_1.getConnection();
+            else if (process.env.NODE_NUM_CONFIGURATION == 2)
+                connection = await node_2.getConnection();
+            else if (process.env.NODE_NUM_CONFIGURATION == 3)
+                connection = await node_3.getConnection();
+            connected = true;
+        } catch (err) {
+            connected = false;
         }
+        
 
-        if (connection) {
+        if (connected && connection) {
             console.log('Connected to own node');
             connection.release();
 
             // If the node was recently disconnected, we need to
             // recover transactions that were not committed
-            if (recentlyDisconnected) {
+            if (connected && recentlyDisconnected) {
                 await transactionHandler.recoverTransactions(connection);
             }
-
             recentlyDisconnected = false;
         } else {
             console.log('own node connection lost. Reconnecting...');

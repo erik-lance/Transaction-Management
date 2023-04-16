@@ -58,7 +58,6 @@ async function recoverTransactions(connection, node_1, node_2, node_3) {
 
 async function grabLogsOfPool(dbPool) {
     console.log("GRABBING LOGS")
-    console.log(dbPool)
     let logs = [];
 
     let connection = await dbPool.getConnection();
