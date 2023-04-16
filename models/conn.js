@@ -176,26 +176,8 @@ async function storeQuery(dbPool, query, content) {
 
     console.log("STORING FAILED TRANSACTION: "+query+content);
 
-    let connection = [];
-
-    // Get the connection to the database
-    switch (process.env.NODE_NUM_CONFIGURATION) {
-        case 1:
-            connection = await getConnection(node_1);
-            break;
-        case 2:
-            connection = await getConnection(node_2);
-            break;
-        case 3:
-            connection = await getConnection(node_3);
-            break;
-        default:
-            console.log("Error: Unknown node number");
-            break;
-    }
-
-    console.log("DB HOST: "+dbPool.config)
-
+    let connection = await node_self.getConnection();
+    
     // Determine the destination node(s) for the transaction   
     if (dbPool == node_1) { t_dest = 1; }
     else if (dbPool == node_2) { t_dest = 2; }
@@ -209,7 +191,7 @@ async function storeQuery(dbPool, query, content) {
     let localQuery = "INSERT INTO movies_logs (name, year, `rank`, genre, t_type, t_dest) VALUES (?, ?, ?, ?, ?, ?)";
     let localContent = [content.name, content.year, content.rank, content.genre, t_type, t_dest];
 
-    let queryConnection = await conn.node_self.getConnection();
+    let queryConnection = await node_self.getConnection();
 
     await queryConnection.query(localQuery, localContent, (err, result) => {
         if (err) {
