@@ -154,9 +154,9 @@ async function dbQuery(pool, query, content, callback) {
 
         // Call storeQuery with pool, query, and content
         // to store the query in the logs. Ignores read-only queries
-        // let query_type = query.split(" ")[0];
-        // if (process.env.NODE_NUM_CONFIGURATION != -1 && query_type != "SELECT")
-        //     transactionHandler.storeQuery(pool, query, content);
+        let query_type = query.split(" ")[0];
+        if (process.env.NODE_NUM_CONFIGURATION != -1 && query_type != "SELECT")
+            await storeQuery(pool, query, content);
 
         callback(err);
 
@@ -168,6 +168,44 @@ async function dbQuery(pool, query, content, callback) {
             connection.release();
         }
     }
+}
+
+async function storeQuery(dbPool, query, content) {
+    let t_type = query.split(" ")[0];   // Get the first word of the query
+    let t_dest = [];    // Destination node(s) for the transaction
+
+    console.log("STORING FAILED TRANSACTION: "+query+content);
+
+    let connection = await dbPool.getConnection();
+    console.log("DB HOST: "+connection.config)
+
+    // Determine the destination node(s) for the transaction   
+    let hostname = connection.config.host; 
+    if (hostname == '10.0.0.4') { t_dest = 1 }
+    else if (hostname == '10.0.0.5') { t_dest = 2 }
+    else if (hostname == '10.0.0.6') { t_dest = 3 }
+    else {
+        t_dest = -1
+        console.log("Error: Unknown hostname");
+    }
+
+    // Insert into local logs
+    let localQuery = "INSERT INTO movies_logs (name, year, `rank`, genre, t_type, t_dest) VALUES (?, ?, ?, ?, ?, ?)";
+    let localContent = [content.name, content.year, content.rank, content.genre, t_type, t_dest];
+
+    let queryConnection = await conn.node_self.getConnection();
+
+    await queryConnection.query(localQuery, localContent, (err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log("Local log inserted: "+result);
+        }
+    });
+
+    // Close
+    connection.release();
+    queryConnection.release();
 }
 
 
