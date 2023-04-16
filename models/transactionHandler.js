@@ -12,10 +12,10 @@ const conn = require("../models/conn.js");
  * left in the local logs.
  */
 
-async function recoverTransactions(connection) {
-    const [node_1_logs] = await grabLogsOfPool(conn.node_1);
-    const [node_2_logs] = await grabLogsOfPool(conn.node_2);
-    const [node_3_logs] = await grabLogsOfPool(conn.node_3);
+async function recoverTransactions(connection, node_1, node_2, node_3) {
+    const [node_1_logs] = await grabLogsOfPool(node_1);
+    const [node_2_logs] = await grabLogsOfPool(node_2);
+    const [node_3_logs] = await grabLogsOfPool(node_3);
 
     // Database Recovery
     console.log ("Recovering transactions...")
@@ -26,7 +26,6 @@ async function recoverTransactions(connection) {
 
     // Inserts the logs into the database
     for (let i = 0; i < 3; i++) {
-        let node = [];
         let node_logs = [];
         switch(i) {
             case 0:
@@ -46,12 +45,12 @@ async function recoverTransactions(connection) {
             let log = node_logs[j];
 
             let logsSourceNode = [];
-            if (i == 0) logsSourceNode = conn.node_1;
-            else if (i == 1) logsSourceNode = conn.node_2;
-            else if (i == 2) logsSourceNode = conn.node_3;
+            if (i == 0) logsSourceNode = node_1;
+            else if (i == 1) logsSourceNode = node_2;
+            else if (i == 2) logsSourceNode = node_3;
 
             // Commit the transaction
-            commitTransaction(log, node);
+            commitTransaction(log, logsSourceNode, node_1, node_2, node_3);
         }
     }
 }
@@ -81,15 +80,15 @@ async function grabLogsOfPool(dbPool) {
  * @param {*} log The log to be committed
  * @param {*} currnode The node that is currently being used
  */
-async function commitTransaction(log, currnode) {
+async function commitTransaction(log, currnode, node_1, node_2, node_3) {
     let query = "INSERT INTO movies (name, year, `rank`, genre) VALUES (?, ?, ?, ?)";
     let content = [log.name, log.year, log.rank, log.genre];
 
     // Set destination node
     let node = [];
-    if (log.t_dest == 1) node = conn.node_1;
-    else if (log.t_dest == 2) node = conn.node_2;
-    else if (log.t_dest == 3) node = conn.node_3;
+    if (log.t_dest == 1) node = node_1;
+    else if (log.t_dest == 2) node = node_2;
+    else if (log.t_dest == 3) node = node_3;
 
     let connection = await node.getConnection();
 

@@ -198,7 +198,7 @@ function listen_connections() {
             connection = await node_3.getConnection();
 
         if (recentlyDisconnected && connection) {
-            await transactionHandler.recoverTransactions(connection);
+            await transactionHandler.recoverTransactions(connection, node_1, node_2, node_3);
             recentlyDisconnected = false;
         }
 
