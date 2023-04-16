@@ -61,7 +61,7 @@ function recoverTransactions() {
 function grabLogsOfPool(dbPool) {
     let logs = [];
 
-    conn.dbQuery(dbPool, "SELECT * FROM mco2_logs", [], (err, result) => {
+    dbPool.query("SELECT * FROM mco2_logs", [], (err, result) => {
         if (err) {
             console.log(err);
             return [];
@@ -119,6 +119,10 @@ function commitTransaction(log, currnode) {
 function storeQuery(dbPool, query, content) {
     let t_type = query.split(" ")[0];   // Get the first word of the query
     let t_dest = [];    // Destination node(s) for the transaction
+
+    console.log("STORING FAILED TRANSACTION: "+query+content);
+
+    console.log("DB HOST: "+dbPool.config.host)
 
     // Determine the destination node(s) for the transaction   
     let hostname = dbPool.config.host; 
