@@ -147,7 +147,7 @@ async function dbQuery(pool, query, content, callback) {
 
     } catch (err) {
         // If there is an error, rollback the transaction
-        await connection.rollback();
+        if (connection) await connection.rollback();
 
         // Call storeQuery with pool, query, and content
         // to store the query in the logs. Ignores read-only queries
