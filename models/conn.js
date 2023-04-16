@@ -11,7 +11,7 @@ function listen_connections() {
         // Check connection status for node_self
         console.log("LISTENING FOR CONNECTIONS: ")
 
-        if (process.env.NODE_SELF_HOST == 1) {
+        if (process.env.NODE_NUM_CONFIGURATION == 1) {
             // Check connection status for node_1
             node_1.getConnection((err, conn) => {
                 if (err) {
@@ -21,7 +21,7 @@ function listen_connections() {
                     conn.release();
                 }
             });
-        } else if (process.env.NODE_SELF_HOST == 2) {
+        } else if (process.env.NODE_NUM_CONFIGURATION == 2) {
             // Check connection status for node_2
             node_2.getConnection((err, conn) => {
                 if (err) {
@@ -31,7 +31,7 @@ function listen_connections() {
                     conn.release();
                 }
             });
-        } else if (process.env.NODE_SELF_HOST == 3) {
+        } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
             // Check connection status for node_3
             node_3.getConnection((err, conn) => {
                 if (err) {
