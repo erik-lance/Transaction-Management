@@ -17,6 +17,13 @@ function recoverTransactions() {
     const [node_2_logs] = grabLogsOfPool(conn.node_2);
     const [node_3_logs] = grabLogsOfPool(conn.node_3);
 
+    // Database Recovery
+    console.log ("Recovering transactions...")
+    // Logs
+    console.log("Node 1 Logs: "+node_1_logs);
+    console.log("Node 2 Logs: "+node_2_logs);
+    console.log("Node 3 Logs: "+node_3_logs);
+
     // Inserts the logs into the database
     for (let i = 0; i < 3; i++) {
         let node = [];
@@ -59,6 +66,8 @@ function grabLogsOfPool(dbPool) {
             console.log(err);
             return [];
         } else {
+            console.log("Grabbed logs from pool")
+            console.log(result)
             for (let i = 0; i < result.length; i++) {
                 logs.push(result[i]);
             }
@@ -112,7 +121,7 @@ function storeQuery(dbPool, query, content) {
     let t_dest = [];    // Destination node(s) for the transaction
 
     // Determine the destination node(s) for the transaction   
-    let hostname = dbPool.config.connectionConfig.host; 
+    let hostname = dbPool.config.host; 
     if (hostname == '10.0.0.4') { t_dest = 1 }
     else if (hostname == '10.0.0.5') { t_dest = 2 }
     else if (hostname == '10.0.0.6') { t_dest = 3 }

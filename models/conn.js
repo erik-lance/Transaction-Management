@@ -154,7 +154,7 @@ async function dbQuery(pool, query, content, callback) {
 
         // Call storeQuery with pool, query, and content
         // to store the query in the logs. Ignores read-only queries
-        if (process.env.NODE_NUM_CONFIGURATION != -1 && content != null)
+        if (process.env.NODE_NUM_CONFIGURATION != -1 && content != []])
             transactionHandler.storeQuery(pool, query, content);
 
         callback(err);
