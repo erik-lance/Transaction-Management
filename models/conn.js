@@ -176,11 +176,28 @@ async function storeQuery(dbPool, query, content) {
 
     console.log("STORING FAILED TRANSACTION: "+query+content);
 
-    let connection = await dbPool.getConnection();
-    console.log("DB HOST: "+connection.config)
+    let connection = [];
+
+    // Get the connection to the database
+    switch (process.env.NODE_NUM_CONFIGURATION) {
+        case 1:
+            connection = await getConnection(node_1);
+            break;
+        case 2:
+            connection = await getConnection(node_2);
+            break;
+        case 3:
+            connection = await getConnection(node_3);
+            break;
+        default:
+            console.log("Error: Unknown node number");
+            break;
+    }
+
+    console.log("DB HOST: "+dbPool.config)
 
     // Determine the destination node(s) for the transaction   
-    let hostname = connection.config.host; 
+    let hostname = dbPool.config.host; 
     if (hostname == '10.0.0.4') { t_dest = 1 }
     else if (hostname == '10.0.0.5') { t_dest = 2 }
     else if (hostname == '10.0.0.6') { t_dest = 3 }
