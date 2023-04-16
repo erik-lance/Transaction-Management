@@ -21,16 +21,32 @@ const controller = {
         res.render("movies", data);
     },
 
-    moviesData: (req, res) => {
+    moviesData: async (req, res) => {
+        async function connectionReRoute() {
+            try {
+                let connection = await conn.node_1.getConnection();
+                node = conn.node_1;
+            } catch (err) {
+                try {
+                    let connection = await conn.node_2.getConnection();
+                    node = conn.node_2;
+                } catch (err) {
+                    try {
+                        let connection = await conn.node_3.getConnection();
+                        node = conn.node_3;
+                    } catch (err) {
+                        console.log(err);
+                        res.status(500).send('Error retrieving data from database');
+                    }
+                }
+            }
+        }
+
         console.log("Getting data...");
         let node;
-        if (process.env.NODE_NUM_CONFIGURATION == 2) {
-            node = conn.node_2;
-        } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
-            node = conn.node_3;
-        } else {
-            node = conn.node_1;
-        }
+        
+        await connectionReRoute();
+
         conn.dbQuery(node, "SELECT * FROM movies", [], (err, result) => {
             if (err) {
                 console.log(err);

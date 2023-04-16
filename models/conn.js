@@ -274,7 +274,6 @@ async function grabLogsOfPool(dbPool) {
     }
 
     console.log("ACQUIRED LOGS")
-    console.log(logs)
     return logs;
 }
 
@@ -297,7 +296,8 @@ async function commitTransaction(log, currnode) {
         console.log(log);
     }
 
-
+    // Commit the transaction
+    console.log("Committing transaction: "+query+" : "+content);
     await connection.query(query, content, (err, result) => {
         if (err) {
             console.log(err)
