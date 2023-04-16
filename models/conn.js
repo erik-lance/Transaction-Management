@@ -5,46 +5,6 @@ const transactionHandler = require("../models/transactionHandler.js");
 
 let node_host, node_user, node_password, node_database = [];
 
-function listen_connections() {
-    // Periodically check the connections
-    setInterval(() => {
-        // Check connection status for node_self
-        console.log("LISTENING FOR CONNECTIONS: ")
-
-        if (process.env.NODE_NUM_CONFIGURATION == 1) {
-            // Check connection status for node_1
-            node_1.getConnection((err, conn) => {
-                if (err) {
-                    console.log(`node_1 connection lost. Reconnecting...`);
-                } else {
-                    console.log(`Connected to node_1`);
-                    conn.release();
-                }
-            });
-        } else if (process.env.NODE_NUM_CONFIGURATION == 2) {
-            // Check connection status for node_2
-            node_2.getConnection((err, conn) => {
-                if (err) {
-                    console.log(`node_2 connection lost. Reconnecting...`);
-                } else {
-                    console.log(`Connected to node_2`);
-                    conn.release();
-                }
-            });
-        } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
-            // Check connection status for node_3
-            node_3.getConnection((err, conn) => {
-                if (err) {
-                    console.log(`node_3 connection lost. Reconnecting...`);
-                } else {
-                    console.log(`Connected to node_3`);
-                    conn.release();
-                }
-            });
-        }
-    }, 5000); // Interval in milliseconds (e.g., 5000ms = 5 seconds)
-}
-
 function switchConnection(config_num) {
     switch (config_num) {
         case -1:
@@ -223,6 +183,44 @@ function gracefulShutdown(pool) {
         }
         console.log("Shutting down gracefully");
     });
+}
+
+function listen_connections() {
+    // Periodically check the connections
+    setInterval(() => {
+        // Check connection status for node_self
+        if (process.env.NODE_NUM_CONFIGURATION == 1) {
+            // Check connection status for node_1
+            node_1.getConnection((err, conn) => {
+                if (err) {
+                    console.log(`node_1 connection lost. Reconnecting...`);
+                } else {
+                    console.log(`Connected to node_1`);
+                    conn.release();
+                }
+            });
+        } else if (process.env.NODE_NUM_CONFIGURATION == 2) {
+            // Check connection status for node_2
+            node_2.getConnection((err, conn) => {
+                if (err) {
+                    console.log(`node_2 connection lost. Reconnecting...`);
+                } else {
+                    console.log(`Connected to node_2`);
+                    conn.release();
+                }
+            });
+        } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
+            // Check connection status for node_3
+            node_3.getConnection((err, conn) => {
+                if (err) {
+                    console.log(`node_3 connection lost. Reconnecting...`);
+                } else {
+                    console.log(`Connected to node_3`);
+                    conn.release();
+                }
+            });
+        }
+    }, 10000); // Interval in milliseconds (e.g., 5000ms = 5 seconds)
 }
 
 process.on('SIGINT', () => {
