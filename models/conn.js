@@ -193,30 +193,30 @@ function listen_connections() {
             // Check connection status for node_1
             node_1.getConnection((err, conn) => {
                 if (err) {
-                    console.log(`node_1 connection lost. Reconnecting...`);
+                    console.log('node_1 connection lost. Reconnecting...');
                 } else {
-                    console.log(`Connected to node_1`);
-                    conn.release();
+                    console.log('Connected to node_1');
+                    node_1.release();
                 }
             });
         } else if (process.env.NODE_NUM_CONFIGURATION == 2) {
             // Check connection status for node_2
             node_2.getConnection((err, conn) => {
                 if (err) {
-                    console.log(`node_2 connection lost. Reconnecting...`);
+                    console.log('node_2 connection lost. Reconnecting...');
                 } else {
-                    console.log(`Connected to node_2`);
-                    conn.release();
+                    console.log('Connected to node_2');
+                    node_2.release();
                 }
             });
         } else if (process.env.NODE_NUM_CONFIGURATION == 3) {
             // Check connection status for node_3
             node_3.getConnection((err, conn) => {
                 if (err) {
-                    console.log(`node_3 connection lost. Reconnecting...`);
+                    console.log('node_3 connection lost. Reconnecting...');
                 } else {
-                    console.log(`Connected to node_3`);
-                    conn.release();
+                    console.log('Connected to node_3');
+                    node_3.release();
                 }
             });
         }
