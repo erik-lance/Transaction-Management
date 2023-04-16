@@ -283,21 +283,19 @@ async function grabLogsOfPool(dbPool) {
  * @param {*} log The log to be committed
  * @param {*} currnode The node that is currently being used
  */
-async function commitTransaction(log, currnode, node_1, node_2, node_3) {
+async function commitTransaction(log, currnode) {
     let query = "INSERT INTO movies (name, year, `rank`, genre) VALUES (?, ?, ?, ?)";
     let content = [log.name, log.year, log.rank, log.genre];
 
     // Set destination node
-    let node = [];
-    if (log.T_Dest == 1) node = node_1;
-    else if (log.T_Dest == 2) node = node_2;
-    else if (log.T_Dest == 3) node = node_3;
+    let connection;
+    if (log.T_Dest == 1) connection = await node_1.getConnection();
+    else if (log.T_Dest == 2) connection = await node_2.getConnection();
+    else if (log.T_Dest == 3) connection = await node_3.getConnection();
     else {
         console.log("Error: Unknown destination node");
         console.log(log);
     }
-
-    let connection = await node.getConnection();
 
 
     await connection.query(query, content, (err, result) => {
