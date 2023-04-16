@@ -122,7 +122,7 @@ function storeQuery(dbPool, query, content) {
 
     console.log("STORING FAILED TRANSACTION: "+query+content);
 
-    console.log("DB HOST: "+dbPool.config.host)
+    console.log("DB HOST: "+dbPool.config)
 
     // Determine the destination node(s) for the transaction   
     let hostname = dbPool.config.host; 
