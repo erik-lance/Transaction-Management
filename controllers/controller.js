@@ -155,7 +155,10 @@ const controller = {
         });
 
         let node = year < 1980 ? conn.node_2 : conn.node_3;
-        conn.dbQuery(node, year < 1980 ? "INSERT INTO movies SET ?" : "INSERT INTO movies SET ?" , movie, (err, result) => {
+
+        // Insert movie into slave
+        // 
+        conn.dbQuery(node, "INSERT INTO movies SET ?" , movie, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error adding movie. Please contact administrator.');
@@ -177,7 +180,7 @@ const controller = {
             }
         });
         let node = year < 1980 ? conn.node_2 : conn.node_3;
-        conn.dbQuery(node, year < 1980 ? "DELETE FROM movies WHERE id = ?" : "DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
+        conn.dbQuery(node, "DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error deleting movie. Please contact administrator.');
