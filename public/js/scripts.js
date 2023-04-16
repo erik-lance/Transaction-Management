@@ -19,7 +19,7 @@ $(document).ready(function () {
                 $(className).css('color', 'grey');
               }
               $(className).text(status);
-            }
+            });
 
         },
         error: function (err) {
