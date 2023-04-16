@@ -63,7 +63,7 @@ async function grabLogsOfPool(dbPool) {
 
     let connection = await dbPool.getConnection();
 
-    const result = await dbPool.query("SELECT * FROM mco2_logs");
+    const result = await dbPool.query("SELECT * FROM movies_logs");
 
     connection.release();
 
@@ -101,7 +101,7 @@ async function commitTransaction(log, currnode) {
             console.log("Recovered transaction: "+result);
 
             // Delete the log from the local logs
-            let deleteQuery = "DELETE FROM mco2_logs WHERE id = ?";
+            let deleteQuery = "DELETE FROM movies_logs WHERE id = ?";
             let deleteContent = [log.id];
             let deleteNode = currnode;
 
@@ -138,7 +138,7 @@ async function storeQuery(dbPool, query, content) {
     }
 
     // Insert into local logs
-    let localQuery = "INSERT INTO mco2_logs (name, year, `rank`, genre, t_type, t_dest) VALUES (?, ?, ?, ?, ?, ?)";
+    let localQuery = "INSERT INTO movies_logs (name, year, `rank`, genre, t_type, t_dest) VALUES (?, ?, ?, ?, ?, ?)";
     let localContent = [content.name, content.year, content.rank, content.genre, t_type, t_dest];
 
     let queryConnection = await conn.node_self.getConnection();
