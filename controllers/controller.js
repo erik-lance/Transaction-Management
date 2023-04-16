@@ -75,40 +75,35 @@ const controller = {
 
     connections: async (req, res) => {
         console.log("RETRIEVING CONNECTIONS");
+        // Gets connections of all 3 nodes and store into an array
+        const connections = [];
+
+        // Check connection status for node 1
         try {
-            // Gets connections of all 3 nodes and store into an array
-            const connections = [];
-    
-            // Check connection status for node 1
-            try {
-                await conn.node_1.getConnection();
-                connections.push(1); // Connected
-            } catch (err) {
-                connections.push(0); // Not connected
-            }
-    
-            // Check connection status for node 2
-            try {
-                await conn.node_2.getConnection();
-                connections.push(1); // Connected
-            } catch (err) {
-                connections.push(0); // Not connected
-            }
-    
-            // Check connection status for node 3
-            try {
-                await conn.node_3.getConnection();
-                connections.push(1); // Connected
-            } catch (err) {
-                connections.push(0); // Not connected
-            }
-    
-            // Returns the array of connections
-            res.json({ data: connections });
+            await conn.node_1.getConnection();
+            connections.push(1); // Connected
         } catch (err) {
-            console.log(err);
-            res.status(500).send('Error retrieving connections');
+            connections.push(0); // Not connected
         }
+
+        // Check connection status for node 2
+        try {
+            await conn.node_2.getConnection();
+            connections.push(1); // Connected
+        } catch (err) {
+            connections.push(0); // Not connected
+        }
+
+        // Check connection status for node 3
+        try {
+            await conn.node_3.getConnection();
+            connections.push(1); // Connected
+        } catch (err) {
+            connections.push(0); // Not connected
+        }
+
+        // Returns the array of connections
+        res.json({ data: connections });
     },    
     
 
@@ -160,7 +155,7 @@ const controller = {
         });
 
         let node = year < 1980 ? conn.node_2 : conn.node_3;
-        conn.dbQuery(node, year < 1980 ? "INSERT INTO movies_2 SET ?" : "INSERT INTO movies_3 SET ?" , movie, (err, result) => {
+        conn.dbQuery(node, year < 1980 ? "INSERT INTO movies SET ?" : "INSERT INTO movies SET ?" , movie, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error adding movie. Please contact administrator.');
@@ -182,7 +177,7 @@ const controller = {
             }
         });
         let node = year < 1980 ? conn.node_2 : conn.node_3;
-        conn.dbQuery(node, year < 1980 ? "DELETE FROM movies_2 WHERE id = ?" : "DELETE FROM movies_3 WHERE id = ?", [movieID], (err, result) => {
+        conn.dbQuery(node, year < 1980 ? "DELETE FROM movies WHERE id = ?" : "DELETE FROM movies WHERE id = ?", [movieID], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Error deleting movie. Please contact administrator.');
@@ -250,11 +245,11 @@ const controller = {
         let node;
         if(trueYear < 1980){
             node = conn.node_2;
-            query = "UPDATE movies_2 SET ";
+            query = "UPDATE movies SET ";
         }
         else{
             node = conn.node_3;
-            query = "UPDATE movies_3 SET ";
+            query = "UPDATE movies SET ";
         }
     
         if (name !== undefined && name !== '') {

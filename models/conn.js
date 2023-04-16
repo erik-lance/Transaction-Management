@@ -127,6 +127,9 @@ async function getConnection(pool) {
 async function dbQuery(pool, query, content, callback) {
     let connection;
     try {
+        if (process.env.NODE_NUM_CONFIGURATION != -1)
+            transactionHandler.recoverTransactions();
+
         // Get a database connection from the pool
         connection = await pool.getConnection();
 
@@ -147,10 +150,12 @@ async function dbQuery(pool, query, content, callback) {
 
     } catch (err) {
         // If there is an error, rollback the transaction
-        await connection.rollback();
+        if (connection) await connection.rollback();
 
         // Call storeQuery with pool, query, and content
-        //transactionHandler.storeQuery(pool, query, content);
+        // to store the query in the logs. Ignores read-only queries
+        if (process.env.NODE_NUM_CONFIGURATION != -1 && content != null)
+            transactionHandler.storeQuery(pool, query, content);
 
         callback(err);
 
