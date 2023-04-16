@@ -127,7 +127,6 @@ async function getConnection(pool) {
 async function dbQuery(pool, query, content, callback) {
     let connection;
     try {
-
         // Get a database connection from the pool
         connection = await pool.getConnection();
 
@@ -186,11 +185,9 @@ function gracefulShutdown(pool) {
 }
 
 function listen_connections() {
+    let recentlyDisconnected = false;
     // Periodically check the connections
     setInterval( async () => {
-        // Check connection status for node_self
-
-
         let connection = [];
         
         if (process.env.NODE_NUM_CONFIGURATION == 1) 
@@ -200,14 +197,27 @@ function listen_connections() {
         else if (process.env.NODE_NUM_CONFIGURATION == 3)
             connection = await node_3.getConnection();
 
+        if (recentlyDisconnected && connection) {
+            await transactionHandler.recoverTransactions(connection);
+            recentlyDisconnected = false;
+        }
+
         if (connection) {
             console.log('Connected to own node');
             connection.release();
+
+            // If the node was recently disconnected, we need to
+            // recover transactions that were not committed
+            if (recentlyDisconnected) {
+                await transactionHandler.recoverTransactions(connection);
+            }
+
+            recentlyDisconnected = false;
         } else {
             console.log('own node connection lost. Reconnecting...');
+            recentlyDisconnected = true;
         }
 
-        connection.release();
     }, 10000); // Interval in milliseconds (e.g., 5000ms = 5 seconds)
 }
 

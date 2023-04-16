@@ -12,10 +12,10 @@ const conn = require("../models/conn.js");
  * left in the local logs.
  */
 
-function recoverTransactions() {
-    const [node_1_logs] = grabLogsOfPool(conn.node_1);
-    const [node_2_logs] = grabLogsOfPool(conn.node_2);
-    const [node_3_logs] = grabLogsOfPool(conn.node_3);
+async function recoverTransactions(connection) {
+    const [node_1_logs] = await grabLogsOfPool(conn.node_1);
+    const [node_2_logs] = await grabLogsOfPool(conn.node_2);
+    const [node_3_logs] = await grabLogsOfPool(conn.node_3);
 
     // Database Recovery
     console.log ("Recovering transactions...")
@@ -125,7 +125,7 @@ async function storeQuery(dbPool, query, content) {
     console.log("STORING FAILED TRANSACTION: "+query+content);
 
     let connection = await dbPool.getConnection();
-    console.log("DB HOST: "+connection.config)
+    console.log("DB HOST: "+connection)
 
     // Determine the destination node(s) for the transaction   
     let hostname = connection.config.host; 
